@@ -14,3 +14,18 @@ Sample output:
 | 2000002        | 2000001   | 2     |
 | 2000003        | 2000002   | 3     |
 | 2000004        | 2000003   | 4     |
+
+Solution1:
+
+    // Set Level for CEO first
+    MATCH (ceo:User {employeeNumber: '2000001'})
+    SET ceo.Level = 1
+
+    // Traverse the hierarchy and update Level for others
+    MATCH (n:User)-[:REPORTS_TO*]->(ceo)
+    WITH n, LENGTH(relationshipPath(n, ceo)) AS level
+    SET n.Level = level + 1
+
+    // Optional: Ensure CEO has level 1 and others are numbered accordingly
+    RETURN n.employeeNumber, n.managerid, n.Level
+    ORDER BY n.Level
