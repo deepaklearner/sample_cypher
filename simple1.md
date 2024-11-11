@@ -1,3 +1,40 @@
+v1.2 with loop
+
+MATCH (e:User)
+WHERE e.managerid IS NOT NULL
+
+WITH e, [e.managerid] AS managers, 1 AS level
+
+// Loop to gather managers up to 4 levels
+UNWIND range(1, 4) AS i
+OPTIONAL MATCH (m:User {employeeNumber: e.managerid})
+WITH e, m, managers, level, i, 
+     CASE WHEN NOT m.employeeNumber IN managers THEN managers + [m.employeeNumber] ELSE managers END AS updatedManagers,
+     CASE WHEN m.managerid IS NOT NULL THEN m.managerid ELSE NULL END AS nextManagerId
+WHERE m IS NOT NULL
+
+UNWIND updatedManagers AS manager
+WITH e, manager, updatedManagers, level + 1 AS level
+OPTIONAL MATCH (m2:User {employeeNumber: manager})
+WITH e, m2, updatedManagers, level,
+     CASE WHEN NOT m2.employeeNumber IN updatedManagers THEN updatedManagers + [m2.employeeNumber] ELSE updatedManagers END AS deeperManagers
+WHERE m2 IS NOT NULL
+
+// Continue looping for 3rd and 4th levels...
+WITH e, deeperManagers, level + 1 AS finalLevel
+OPTIONAL MATCH (m3:User {employeeNumber: deeperManagers[3]})
+WITH e, finalLevel, deeperManagers, 
+     CASE WHEN NOT m3.employeeNumber IN deeperManagers THEN deeperManagers + [m3.employeeNumber] ELSE deeperManagers END AS bottomUp4
+
+RETURN e.employeeNumber AS employeeNumber,
+       e.managerid AS managerid,
+       CASE 
+           WHEN size(updatedManagers) =1 and e.managerid = e.employeeNumber THEN 1 
+           WHEN size(updatedManagers) =1 and e.managerid <> e.employeeNumber THEN 2
+           WHEN size(finalManagers) on
+
+
+
 v1.1
 
 MATCH (e:User)
