@@ -1,37 +1,85 @@
-v1.2 with loop
+v1.2 upto 15 levels
 
 MATCH (e:User)
 WHERE e.managerid IS NOT NULL
 
-WITH e, [e.managerid] AS managers, 1 AS level  // Start with the first manager
+WITH e, [e.managerid] AS managers
 
 // Collect manager hierarchy up to 15 levels, ensuring no duplicates
-WITH e, managers, level
 OPTIONAL MATCH (m:User {employeeNumber: e.managerid})
+WITH e, m, 
+     CASE WHEN NOT m.employeeNumber IN managers THEN managers + [m.employeeNumber] ELSE managers END AS managers
 WHERE m IS NOT NULL
-WITH e, managers + [m.employeeNumber] AS managers, level + 1 AS level
 
-WITH e, managers, level
-OPTIONAL MATCH (m2:User {employeeNumber: head(managers)})
+OPTIONAL MATCH (m2:User {employeeNumber: m.managerid})
+WITH e, m2,
+     CASE WHEN NOT m2.employeeNumber IN managers THEN managers + [m2.employeeNumber] ELSE managers END AS managers
 WHERE m2 IS NOT NULL
-WITH e, CASE WHEN NOT m2.employeeNumber IN managers THEN managers + [m2.employeeNumber] ELSE managers END AS managers, level + 1 AS level
 
-WITH e, managers, level
-OPTIONAL MATCH (m3:User {employeeNumber: head(tail(managers))})
+OPTIONAL MATCH (m3:User {employeeNumber: m2.managerid})
+WITH e, m3,  
+     CASE WHEN NOT m3.employeeNumber IN managers THEN managers + [m3.employeeNumber] ELSE managers END AS managers
 WHERE m3 IS NOT NULL
-WITH e, CASE WHEN NOT m3.employeeNumber IN managers THEN managers + [m3.employeeNumber] ELSE managers END AS managers, level + 1 AS level
 
-WITH e, managers, level
-OPTIONAL MATCH (m4:User {employeeNumber: head(tail(tail(managers)))})
+OPTIONAL MATCH (m4:User {employeeNumber: m3.managerid})
+WITH e, m4,
+     CASE WHEN NOT m4.employeeNumber IN managers THEN managers + [m4.employeeNumber] ELSE managers END AS managers
 WHERE m4 IS NOT NULL
-WITH e, CASE WHEN NOT m4.employeeNumber IN managers THEN managers + [m4.employeeNumber] ELSE managers END AS managers, level + 1 AS level
 
-WITH e, managers, level
-OPTIONAL MATCH (m5:User {employeeNumber: head(tail(tail(tail(managers))))})
+OPTIONAL MATCH (m5:User {employeeNumber: m4.managerid})
+WITH e, m5,
+     CASE WHEN NOT m5.employeeNumber IN managers THEN managers + [m5.employeeNumber] ELSE managers END AS managers
 WHERE m5 IS NOT NULL
-WITH e, CASE WHEN NOT m5.employeeNumber IN managers THEN managers + [m5.employeeNumber] ELSE managers END AS managers, level + 1 AS level
 
-// Repeat this pattern until up to 15 levels or as required
+OPTIONAL MATCH (m6:User {employeeNumber: m5.managerid})
+WITH e, m6,
+     CASE WHEN NOT m6.employeeNumber IN managers THEN managers + [m6.employeeNumber] ELSE managers END AS managers
+WHERE m6 IS NOT NULL
+
+OPTIONAL MATCH (m7:User {employeeNumber: m6.managerid})
+WITH e, m7,
+     CASE WHEN NOT m7.employeeNumber IN managers THEN managers + [m7.employeeNumber] ELSE managers END AS managers
+WHERE m7 IS NOT NULL
+
+OPTIONAL MATCH (m8:User {employeeNumber: m7.managerid})
+WITH e, m8,
+     CASE WHEN NOT m8.employeeNumber IN managers THEN managers + [m8.employeeNumber] ELSE managers END AS managers
+WHERE m8 IS NOT NULL
+
+OPTIONAL MATCH (m9:User {employeeNumber: m8.managerid})
+WITH e, m9,
+     CASE WHEN NOT m9.employeeNumber IN managers THEN managers + [m9.employeeNumber] ELSE managers END AS managers
+WHERE m9 IS NOT NULL
+
+OPTIONAL MATCH (m10:User {employeeNumber: m9.managerid})
+WITH e, m10,
+     CASE WHEN NOT m10.employeeNumber IN managers THEN managers + [m10.employeeNumber] ELSE managers END AS managers
+WHERE m10 IS NOT NULL
+
+OPTIONAL MATCH (m11:User {employeeNumber: m10.managerid})
+WITH e, m11,
+     CASE WHEN NOT m11.employeeNumber IN managers THEN managers + [m11.employeeNumber] ELSE managers END AS managers
+WHERE m11 IS NOT NULL
+
+OPTIONAL MATCH (m12:User {employeeNumber: m11.managerid})
+WITH e, m12,
+     CASE WHEN NOT m12.employeeNumber IN managers THEN managers + [m12.employeeNumber] ELSE managers END AS managers
+WHERE m12 IS NOT NULL
+
+OPTIONAL MATCH (m13:User {employeeNumber: m12.managerid})
+WITH e, m13,
+     CASE WHEN NOT m13.employeeNumber IN managers THEN managers + [m13.employeeNumber] ELSE managers END AS managers
+WHERE m13 IS NOT NULL
+
+OPTIONAL MATCH (m14:User {employeeNumber: m13.managerid})
+WITH e, m14,
+     CASE WHEN NOT m14.employeeNumber IN managers THEN managers + [m14.employeeNumber] ELSE managers END AS managers
+WHERE m14 IS NOT NULL
+
+OPTIONAL MATCH (m15:User {employeeNumber: m14.managerid})
+WITH e, m15,
+     CASE WHEN NOT m15.employeeNumber IN managers THEN managers + [m15.employeeNumber] ELSE managers END AS managers
+WHERE m15 IS NOT NULL
 
 // Output the result
 RETURN e.employeeNumber AS employeeNumber, 
@@ -43,15 +91,32 @@ RETURN e.employeeNumber AS employeeNumber,
            WHEN size(managers) = 3 THEN 4
            WHEN size(managers) = 4 THEN 5
            WHEN size(managers) = 5 THEN 6
-           // Add more conditions as necessary for higher levels
+           WHEN size(managers) = 6 THEN 7
+           WHEN size(managers) = 7 THEN 8
+           WHEN size(managers) = 8 THEN 9
+           WHEN size(managers) = 9 THEN 10
+           WHEN size(managers) = 10 THEN 11
+           WHEN size(managers) = 11 THEN 12
+           WHEN size(managers) = 12 THEN 13
+           WHEN size(managers) = 13 THEN 14
+           WHEN size(managers) = 14 THEN 15
            ELSE 0 
-       END AS Level,
+       END AS Level,  // Adjust level for CEO
        CASE WHEN size(managers) > 0 THEN managers[0] ELSE NULL END AS L1managerid,
        CASE WHEN size(managers) > 1 THEN managers[1] ELSE NULL END AS L2managerid,
        CASE WHEN size(managers) > 2 THEN managers[2] ELSE NULL END AS L3managerid,
        CASE WHEN size(managers) > 3 THEN managers[3] ELSE NULL END AS L4managerid,
-       CASE WHEN size(managers) > 4 THEN managers[4] ELSE NULL END AS L5managerid
-       // Add more manager levels up to L15managerid as necessary
+       CASE WHEN size(managers) > 4 THEN managers[4] ELSE NULL END AS L5managerid,
+       CASE WHEN size(managers) > 5 THEN managers[5] ELSE NULL END AS L6managerid,
+       CASE WHEN size(managers) > 6 THEN managers[6] ELSE NULL END AS L7managerid,
+       CASE WHEN size(managers) > 7 THEN managers[7] ELSE NULL END AS L8managerid,
+       CASE WHEN size(managers) > 8 THEN managers[8] ELSE NULL END AS L9managerid,
+       CASE WHEN size(managers) > 9 THEN managers[9] ELSE NULL END AS L10managerid,
+       CASE WHEN size(managers) > 10 THEN managers[10] ELSE NULL END AS L11managerid,
+       CASE WHEN size(managers) > 11 THEN managers[11] ELSE NULL END AS L12managerid,
+       CASE WHEN size(managers) > 12 THEN managers[12] ELSE NULL END AS L13managerid,
+       CASE WHEN size(managers) > 13 THEN managers[13] ELSE NULL END AS L14managerid,
+       CASE WHEN size(managers) > 14 THEN managers[14] ELSE NULL END AS L15managerid
 ORDER BY e.employeeNumber
 
 
