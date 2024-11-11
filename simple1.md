@@ -83,9 +83,10 @@ UNION
 // Step 3: Recursively find indirect reports and calculate the level dynamically
 MATCH (n:User)-[:REPORTS_TO*]->(ceo:User)
 WHERE n.managerid <> n.employeeNumber  // Avoid users reporting to themselves
-WITH n, ceo, REDUCE(level = 0, r IN relationships((n)-[:REPORTS_TO*]->(ceo)) | level + 1) AS level
+WITH n, ceo, LENGTH((n)-[:REPORTS_TO*]->(ceo)) + 1 AS level
 RETURN n.employeeNumber AS employeeNumber, ceo.employeeNumber AS managerid, level
 ORDER BY level
+
 
 
 
