@@ -28,19 +28,19 @@ RETURN
     Level,
     
     // L1 manager details
-    L1.employeeNumber AS L1managerid,
-    L1_name.givenName AS L1managerFirstName,
-    L1_name.familyName AS L1managerLastName,
-    L1_email.WorkEmail AS L1managerEmail,
+    CASE WHEN Level >= 2 THEN L1.employeeNumber ELSE NULL END AS L1managerid,
+    CASE WHEN Level >= 2 THEN L1_name.givenName ELSE NULL END AS L1managerFirstName,
+    CASE WHEN Level >= 2 THEN L1_name.familyName ELSE NULL END AS L1managerLastName,
+    CASE WHEN Level >= 2 THEN L1_email.WorkEmail ELSE NULL END AS L1managerEmail,
     
     // L2 manager details
-    L2.employeeNumber AS L2managerid,
-    L2_name.givenName AS L2managerFirstName,
-    L2_name.familyName AS L2managerLastName,
-    L2_email.WorkEmail AS L2managerEmail,
+    CASE WHEN Level >= 3 THEN L2.employeeNumber ELSE NULL END AS L2managerid,
+    CASE WHEN Level >= 3 THEN L2_name.givenName ELSE NULL END AS L2managerFirstName,
+    CASE WHEN Level >= 3 THEN L2_name.familyName ELSE NULL END AS L2managerLastName,
+    CASE WHEN Level >= 3 THEN L2_email.WorkEmail ELSE NULL END AS L2managerEmail,
     
     // L3 manager details
-    L3.employeeNumber AS L3managerid,
-    L3_name.givenName AS L3managerFirstName,
-    L3_name.familyName AS L3managerLastName,
-    L3_email.WorkEmail AS L3managerEmail
+    CASE WHEN Level >= 4 THEN L3.employeeNumber ELSE NULL END AS L3managerid,
+    CASE WHEN Level >= 4 THEN L3_name.givenName ELSE NULL END AS L3managerFirstName,
+    CASE WHEN Level >= 4 THEN L3_name.familyName ELSE NULL END AS L3managerLastName,
+    CASE WHEN Level >= 4 THEN L3_email.WorkEmail ELSE NULL END AS L3managerEmail
