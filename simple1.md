@@ -54,15 +54,16 @@ v1.3
 MATCH (ceo:User {employeeNumber: '2000001'})
 SET ceo.Level = 1
 
-// Now, traverse the hierarchy and calculate Level for others
+// Traverse the hierarchy and calculate Level for others
 WITH ceo
-MATCH (n:User)-[:REPORTS_TO*]->(ceo)
-WITH n, LENGTH((n)-[:REPORTS_TO*]->(ceo)) AS level
-SET n.Level = level + 1
+MATCH path = (n:User)-[:REPORTS_TO*]->(ceo)  // Match the path from the user to the CEO
+WITH n, LENGTH(path) AS level  // Calculate the length of the path (number of hops)
+SET n.Level = level + 1  // Set the level, adding 1 to the path length
 
 // Return the updated results
 RETURN n.employeeNumber, n.managerid, n.Level
 ORDER BY n.Level
+
 
 
 
