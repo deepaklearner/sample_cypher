@@ -78,8 +78,10 @@ MATCH (n:User)-[:REPORTS_TO]->(ceo:User)
 WHERE ceo.employeeNumber = n.managerid
 SET n.Level = 2
 
-// Return the CEO and their direct reports
-RETURN ceo.employeeNumber AS CEO, n.employeeNumber AS Level2User, n.Level
+// Return the CEO and their direct reports (Level 2 users)
+RETURN n.employeeNumber, n.managerid, n.Level
+ORDER BY n.Level
+
 
 
 
