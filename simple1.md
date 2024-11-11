@@ -73,17 +73,39 @@ MATCH (ceo:User {employeeNumber: '2000001'})
 SET ceo.Level = 1
 
 // Step 2: Use a recursive query to propagate levels down the hierarchy
-WITH ceo
-CALL apoc.refactor.cloneNodes({nodes:[ceo], relationshipTypes:['REPORTS_TO']}) YIELD node
-WITH node
-MATCH (n:User)-[:REPORTS_TO]->(m:User)
-WHERE m.Level IS NOT NULL AND n.Level IS NULL
-SET n.Level = m.Level + 1
+// Step 1: Set the CEO's Level to 1
+MATCH (ceo:User {employeeNumber: '2000001'})
+SET ceo.Level = 1
 
-// Step 3: Return the results with no duplicates
+// Step 2: Recursively calculate levels for the rest of the hierarchy
+WITH ceo
+// Step 2a: First, match direct reports to the CEO (Level 2)
+MATCH (n:User)-[:REPORTS_TO]->(m:User)
+WHERE m.employeeNumber = ceo.employeeNumber
+SET n.Level = 2
+
+// Step 2b: Now propagate levels down the hierarchy. 
+// We match users at Level 2 and propagate down.
+WITH DISTINCT n
+MATCH (n)-[:REPORTS_TO]->(m:User)
+WHERE m.Level = 2
+SET n.Level = 3
+
+WITH DISTINCT n
+MATCH (n)-[:REPORTS_TO]->(m:User)
+WHERE m.Level = 3
+SET n.Level = 4
+
+WITH DISTINCT n
+MATCH (n)-[:REPORTS_TO]->(m:User)
+WHERE m.Level = 4
+SET n.Level = 5
+
+// Step 3: Return the final results, ensuring no duplicates
 WITH DISTINCT n
 RETURN n.employeeNumber, n.managerid, n.Level
 ORDER BY n.Level
+
 
 
 
