@@ -1,3 +1,46 @@
+v1.3
+
+MATCH (e:User)
+WHERE e.managerid IS NOT NULL
+WITH e, [e] AS path
+
+// First level of reporting
+OPTIONAL MATCH (e)-[:REPORTS_TO]->(m:User)
+WITH e, m, path + m AS path
+
+// Second level of reporting
+OPTIONAL MATCH (m)-[:REPORTS_TO]->(m2:User)
+WITH e, m2, path + m2 AS path
+
+// Third level of reporting
+OPTIONAL MATCH (m2)-[:REPORTS_TO]->(m3:User)
+WITH e, m3, path + m3 AS path
+
+// Fourth level of reporting
+OPTIONAL MATCH (m3)-[:REPORTS_TO]->(m4:User)
+WITH e, m4, path + m4 AS path
+
+// Extract manager IDs based on path length
+WITH e,
+     CASE WHEN size(path) > 0 THEN path[0].employeeNumber ELSE null END AS L1managerid,
+     CASE WHEN size(path) > 1 THEN path[1].employeeNumber ELSE null END AS L2managerid,
+     CASE WHEN size(path) > 2 THEN path[2].employeeNumber ELSE null END AS L3managerid,
+     CASE WHEN size(path) > 3 THEN path[3].employeeNumber ELSE null END AS L4managerid
+
+RETURN e.employeeNumber AS employeeNumber, 
+       e.managerid AS managerid, 
+       CASE 
+         WHEN L1managerid IS NOT NULL THEN 1 
+         WHEN L2managerid IS NOT NULL THEN 2 
+         WHEN L3managerid IS NOT NULL THEN 3 
+         WHEN L4managerid IS NOT NULL THEN 4 
+         ELSE 0 
+       END AS Level,
+       L1managerid, L2managerid, L3managerid, L4managerid
+ORDER BY e.employeeNumber;
+
+
+
 v1.2
 
 MATCH (e:User)
