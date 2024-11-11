@@ -14,14 +14,14 @@ OPTIONAL MATCH (L2)-[:HAS_ATTRIBUTE]->(L2_email:WorkEmail)
 OPTIONAL MATCH (L3)-[:HAS_ATTRIBUTE]->(L3_name:Name)
 OPTIONAL MATCH (L3)-[:HAS_ATTRIBUTE]->(L3_email:WorkEmail)
 
-// Calculate Level
+// Calculate Level based on manager hierarchy depth
 WITH user, L1, L2, L3,
      user_name, user_email, L1_name, L1_email, L2_name, L2_email, L3_name, L3_email,
      CASE 
        WHEN user.employeeNumber = user.managerid THEN 1
-       WHEN L1 IS NOT NULL AND L2 IS NULL THEN 2
-       WHEN L2 IS NOT NULL AND L3 IS NULL THEN 3
-       WHEN L3 IS NOT NULL THEN 4
+       WHEN L1 IS NOT NULL AND L2 IS NULL AND L3 IS NULL THEN 2
+       WHEN L1 IS NOT NULL AND L2 IS NOT NULL AND L3 IS NULL THEN 3
+       WHEN L1 IS NOT NULL AND L2 IS NOT NULL AND L3 IS NOT NULL THEN 4
        ELSE NULL 
      END AS Level
 
