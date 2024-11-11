@@ -68,19 +68,22 @@ Multiple issue. there are total 7 rows in output. Duplicate employeeNumber. also
 
 v1.4
 
-// Step 1: Identify the CEO (user who reports to themselves) and set their level to 1
+// Step 1: Identify the CEO (user who reports to themselves)
 MATCH (ceo:User)
 WHERE ceo.employeeNumber = ceo.managerid
-SET ceo.Level = 1
 
-// Step 2: Find all users who report to the CEO and set their level to 2
-MATCH (n:User)-[:REPORTS_TO]->(ceo:User)
-WHERE ceo.employeeNumber = n.managerid
-SET n.Level = 2
+// Step 2: Find all direct reports to the CEO (Level 2)
+MATCH (n:User)-[:REPORTS_TO]->(ceo)
+RETURN ceo.employeeNumber AS employeeNumber, ceo.employeeNumber AS managerid, 1 AS Level
+UNION
+// Step 3: Find all direct reports to Level 2 users and calculate Level 3, and so on
+MATCH (n:User)-[:REPORTS_TO]->(m:User)
+WHERE m.employeeNumber <> m.managerid // Avoid cyclic relations (in case a user reports to themselves)
+WITH n, m, 2 AS Level
+MATCH (m2:User)-[:REPORTS_TO]->(m)
+RETURN n.employeeNumber AS employeeNumber, m.employeeNumber AS managerid, Level
+ORDER BY Level
 
-// Return the CEO and their direct reports (Level 2 users)
-RETURN n.employeeNumber, n.managerid, n.Level
-ORDER BY n.Level
 
 
 
