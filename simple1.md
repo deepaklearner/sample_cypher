@@ -3,45 +3,57 @@ v1.2 with loop
 MATCH (e:User)
 WHERE e.managerid IS NOT NULL
 
-WITH e, [e.managerid] AS managers
+WITH e, [e.managerid] AS managers, 1 AS level  // Start with the first manager
 
-// Loop to gather up to 4 levels of managers
-UNWIND range(1, 4) AS levelIndex
-OPTIONAL MATCH (m:User {employeeNumber: head(managers)})
-WITH e, m, managers + [m.employeeNumber] AS updatedManagers
+// Collect manager hierarchy up to 15 levels, ensuring no duplicates
+WITH e, managers, level
+OPTIONAL MATCH (m:User {employeeNumber: e.managerid})
 WHERE m IS NOT NULL
+WITH e, managers + [m.employeeNumber] AS managers, level + 1 AS level
 
-// Repeat process for subsequent levels of managers
-WITH e, updatedManagers
-UNWIND range(1, 3) AS levelIndex2
-OPTIONAL MATCH (m2:User {employeeNumber: head(updatedManagers)})
-WITH e, m2, updatedManagers + [m2.employeeNumber] AS deeperManagers
+WITH e, managers, level
+OPTIONAL MATCH (m2:User {employeeNumber: head(managers)})
 WHERE m2 IS NOT NULL
+WITH e, CASE WHEN NOT m2.employeeNumber IN managers THEN managers + [m2.employeeNumber] ELSE managers END AS managers, level + 1 AS level
 
-// Repeat for 3rd and 4th levels of managers
-WITH e, deeperManagers
-UNWIND range(1, 2) AS levelIndex3
-OPTIONAL MATCH (m3:User {employeeNumber: head(deeperManagers)})
-WITH e, m3, deeperManagers + [m3.employeeNumber] AS bottomUpManagers
+WITH e, managers, level
+OPTIONAL MATCH (m3:User {employeeNumber: head(tail(managers))})
 WHERE m3 IS NOT NULL
+WITH e, CASE WHEN NOT m3.employeeNumber IN managers THEN managers + [m3.employeeNumber] ELSE managers END AS managers, level + 1 AS level
 
-WITH e, bottomUpManagers
+WITH e, managers, level
+OPTIONAL MATCH (m4:User {employeeNumber: head(tail(tail(managers)))})
+WHERE m4 IS NOT NULL
+WITH e, CASE WHEN NOT m4.employeeNumber IN managers THEN managers + [m4.employeeNumber] ELSE managers END AS managers, level + 1 AS level
+
+WITH e, managers, level
+OPTIONAL MATCH (m5:User {employeeNumber: head(tail(tail(tail(managers))))})
+WHERE m5 IS NOT NULL
+WITH e, CASE WHEN NOT m5.employeeNumber IN managers THEN managers + [m5.employeeNumber] ELSE managers END AS managers, level + 1 AS level
+
+// Repeat this pattern until up to 15 levels or as required
 
 // Output the result
 RETURN e.employeeNumber AS employeeNumber, 
        e.managerid AS managerid,
        CASE 
-           WHEN size(bottomUpManagers) = 1 AND e.managerid = e.employeeNumber THEN 1 
-           WHEN size(bottomUpManagers) = 1 AND e.managerid <> e.employeeNumber THEN 2
-           WHEN size(bottomUpManagers) = 2 THEN 3
-           WHEN size(bottomUpManagers) = 3 THEN 4
+           WHEN size(managers) = 1 AND e.managerid = e.employeeNumber THEN 1 
+           WHEN size(managers) = 1 AND e.managerid <> e.employeeNumber THEN 2
+           WHEN size(managers) = 2 THEN 3
+           WHEN size(managers) = 3 THEN 4
+           WHEN size(managers) = 4 THEN 5
+           WHEN size(managers) = 5 THEN 6
+           // Add more conditions as necessary for higher levels
            ELSE 0 
-       END AS Level,  // Adjust level for CEO
-       CASE WHEN size(bottomUpManagers) > 0 THEN bottomUpManagers[0] ELSE NULL END AS L1managerid,
-       CASE WHEN size(bottomUpManagers) > 1 THEN bottomUpManagers[1] ELSE NULL END AS L2managerid,
-       CASE WHEN size(bottomUpManagers) > 2 THEN bottomUpManagers[2] ELSE NULL END AS L3managerid,
-       CASE WHEN size(bottomUpManagers) > 3 THEN bottomUpManagers[3] ELSE NULL END AS L4managerid
+       END AS Level,
+       CASE WHEN size(managers) > 0 THEN managers[0] ELSE NULL END AS L1managerid,
+       CASE WHEN size(managers) > 1 THEN managers[1] ELSE NULL END AS L2managerid,
+       CASE WHEN size(managers) > 2 THEN managers[2] ELSE NULL END AS L3managerid,
+       CASE WHEN size(managers) > 3 THEN managers[3] ELSE NULL END AS L4managerid,
+       CASE WHEN size(managers) > 4 THEN managers[4] ELSE NULL END AS L5managerid
+       // Add more manager levels up to L15managerid as necessary
 ORDER BY e.employeeNumber
+
 
 
 
