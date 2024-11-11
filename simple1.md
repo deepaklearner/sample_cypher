@@ -32,17 +32,21 @@ v1.1:
 
 v1.2: 
 
-// First, set the level for the CEO (level 1)
+// Set Level for the CEO
 MATCH (ceo:User {employeeNumber: '2000001'})
 SET ceo.Level = 1
 
-// Now, traverse the hierarchy and calculate the levels for other users
+// Use WITH to pass the ceo to the next part of the query
+WITH ceo
+
+// Now, traverse the hierarchy and calculate Level for others
 MATCH (n:User)-[:REPORTS_TO*]->(ceo)
-WITH n, LENGTH(relationshipPath(n, ceo)) AS level  // Calculate the level based on the relationship path length
-SET n.Level = level + 1  // Set the level for each user
+WITH n, LENGTH(relationshipPath(n, ceo)) AS level
+SET n.Level = level + 1
 
 // Return the updated results
 RETURN n.employeeNumber, n.managerid, n.Level
 ORDER BY n.Level
+
 
 
