@@ -2,30 +2,25 @@ v1.3
 
 MATCH (e:User)
 WHERE e.managerid IS NOT NULL
-WITH e, [] AS path
 
-// First level of reporting
+// First level of reporting (Direct manager)
 OPTIONAL MATCH (e)-[:REPORTS_TO]->(m:User)
-WITH e, m, path + m AS path
 
-// Second level of reporting
+// Second level of reporting (Manager's manager)
 OPTIONAL MATCH (m)-[:REPORTS_TO]->(m2:User)
-WITH e, m2, path + m2 AS path
 
-// Third level of reporting
+// Third level of reporting (Manager's manager's manager)
 OPTIONAL MATCH (m2)-[:REPORTS_TO]->(m3:User)
-WITH e, m3, path + m3 AS path
 
-// Fourth level of reporting
+// Fourth level of reporting (Manager's manager's manager's manager)
 OPTIONAL MATCH (m3)-[:REPORTS_TO]->(m4:User)
-WITH e, m4, path + m4 AS path
 
-// Extract manager IDs based on path length
-WITH e,
-     CASE WHEN size(path) > 0 THEN path[0].employeeNumber ELSE null END AS L1managerid,
-     CASE WHEN size(path) > 1 THEN path[1].employeeNumber ELSE null END AS L2managerid,
-     CASE WHEN size(path) > 2 THEN path[2].employeeNumber ELSE null END AS L3managerid,
-     CASE WHEN size(path) > 3 THEN path[3].employeeNumber ELSE null END AS L4managerid
+// Extract manager IDs for each level
+WITH e, m, m2, m3, m4,
+     CASE WHEN m IS NOT NULL THEN m.employeeNumber ELSE null END AS L1managerid,
+     CASE WHEN m2 IS NOT NULL THEN m2.employeeNumber ELSE null END AS L2managerid,
+     CASE WHEN m3 IS NOT NULL THEN m3.employeeNumber ELSE null END AS L3managerid,
+     CASE WHEN m4 IS NOT NULL THEN m4.employeeNumber ELSE null END AS L4managerid
 
 RETURN e.employeeNumber AS employeeNumber, 
        e.managerid AS managerid, 
@@ -38,6 +33,7 @@ RETURN e.employeeNumber AS employeeNumber,
        END AS Level,
        L1managerid, L2managerid, L3managerid, L4managerid
 ORDER BY e.employeeNumber;
+
 
 
 
