@@ -15,10 +15,10 @@ UNION
 // Step 3: Recursively find indirect reports and calculate the level dynamically
 MATCH (n:User)-[:REPORTS_TO*]->(ceo:User)
 WHERE n.managerid <> n.employeeNumber  // Avoid users reporting to themselves
-WITH n, ceo, LENGTH((n)-[:REPORTS_TO*]->(ceo)) AS pathLength
-WITH n, ceo, pathLength + 1 AS level  // Add 1 to the path length to calculate the correct level
+WITH n, ceo, REDUCE(level = 0, r IN NODES((n)-[:REPORTS_TO*]->(ceo)) | level + 1) AS level
 RETURN n.employeeNumber AS employeeNumber, ceo.employeeNumber AS managerid, level
 ORDER BY level
+
 
 
 
