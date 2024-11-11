@@ -9,29 +9,29 @@ WHERE e.managerid IS NOT NULL
 WITH e, [e.managerid] AS managers // think this as outer loop
 /////////////////////////////////////////////////////////////////
 
-// WITH operates on a row-by-row basis
+  // WITH operates on a row-by-row basis
 
-// Collect manager hierarchy up to 4 levels, ensuring no duplicates  //
-OPTIONAL MATCH (m:User {employeeNumber: e.managerid})
+  // Collect manager hierarchy up to 4 levels, ensuring no duplicates  //
+  OPTIONAL MATCH (m:User {employeeNumber: e.managerid})
 
-WITH e, m, 
-     CASE WHEN NOT m.employeeNumber IN managers THEN managers + [m.employeeNumber] ELSE managers END AS managers
-WHERE m IS NOT NULL
+  WITH e, m, 
+      CASE WHEN NOT m.employeeNumber IN managers THEN managers + [m.employeeNumber] ELSE managers END AS managers
+  WHERE m IS NOT NULL
 
-OPTIONAL MATCH (m2:User {employeeNumber: m.managerid})
-WITH e, m2,
-     CASE WHEN NOT m2.employeeNumber IN managers THEN managers + [m2.employeeNumber] ELSE managers END AS managers
-WHERE m2 IS NOT NULL
+  OPTIONAL MATCH (m2:User {employeeNumber: m.managerid})
+    WITH e, m2,
+        CASE WHEN NOT m2.employeeNumber IN managers THEN managers + [m2.employeeNumber] ELSE managers END AS managers
+    WHERE m2 IS NOT NULL
 
-OPTIONAL MATCH (m3:User {employeeNumber: m2.managerid})
-WITH e, m3,  
-     CASE WHEN NOT m3.employeeNumber IN managers THEN managers + [m3.employeeNumber] ELSE managers END AS managers
-WHERE m3 IS NOT NULL
+    OPTIONAL MATCH (m3:User {employeeNumber: m2.managerid})
+      WITH e, m3,  
+          CASE WHEN NOT m3.employeeNumber IN managers THEN managers + [m3.employeeNumber] ELSE managers END AS managers
+      WHERE m3 IS NOT NULL
 
-OPTIONAL MATCH (m4:User {employeeNumber: m3.managerid})
-WITH e, m4,
-     CASE WHEN NOT m4.employeeNumber IN managers THEN managers + [m4.employeeNumber] ELSE managers END AS managers
-WHERE m4 IS NOT NULL
+      OPTIONAL MATCH (m4:User {employeeNumber: m3.managerid})
+        WITH e, m4,
+            CASE WHEN NOT m4.employeeNumber IN managers THEN managers + [m4.employeeNumber] ELSE managers END AS managers
+        WHERE m4 IS NOT NULL
 
 // Output the result
 RETURN e.employeeNumber AS employeeNumber, 
