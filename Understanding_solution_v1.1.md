@@ -11,7 +11,7 @@ WITH e, [e.managerid] AS managers // think this as outer loop
 
 // WITH operates on a row-by-row basis
 
-// Collect manager hierarchy up to 4 levels, ensuring no duplicates 
+// Collect manager hierarchy up to 4 levels, ensuring no duplicates  //
 OPTIONAL MATCH (m:User {employeeNumber: e.managerid})
 
 WITH e, m, 
