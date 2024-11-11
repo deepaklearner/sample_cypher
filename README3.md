@@ -1,34 +1,44 @@
-// Match all User nodes and retrieve the hierarchy to the CEO for each
-MATCH (user:User)-[:REPORTS_TO*0..]->(manager:User)
-WHERE user.employeeNumber IS NOT NULL
-WITH user, COLLECT(manager) AS hierarchy, SIZE(COLLECT(manager)) AS level
-ORDER BY user.employeeNumber
+MATCH (user:User)
+OPTIONAL MATCH (user)-[:REPORTS_TO]->(L1:User)
+OPTIONAL MATCH (L1)-[:REPORTS_TO]->(L2:User)
+OPTIONAL MATCH (L2)-[:REPORTS_TO]->(L3:User)
 
-// Add name and email attributes for each level
-WITH user, hierarchy, level,
-     [x IN RANGE(0, level - 1) | hierarchy[x].employeeNumber] AS manager_ids,
-     [x IN RANGE(0, level - 1) | head([(hierarchy[x])-[:HAS_ATTRIBUTE]->(name:Name) | name.givenName])] AS manager_firstnames,
-     [x IN RANGE(0, level - 1) | head([(hierarchy[x])-[:HAS_ATTRIBUTE]->(name:Name) | name.familyName])] AS manager_lastnames,
-     [x IN RANGE(0, level - 1) | head([(hierarchy[x])-[:HAS_ATTRIBUTE]->(email:WorkEmail) | email.WorkEmail])] AS manager_emails
+WITH user, L1, L2, L3,
+     CASE 
+       WHEN user.employeeNumber = user.managerid THEN 1
+       WHEN L1 IS NOT NULL AND L2 IS NULL THEN 2
+       WHEN L2 IS NOT NULL AND L3 IS NULL THEN 3
+       WHEN L3 IS NOT NULL THEN 4
+       ELSE NULL 
+     END AS Level
 
-// Format the output with the required columns
-RETURN user.employeeNumber AS employeeNumber,
-       user.managerid AS managerid,
-       CASE level WHEN 1 THEN "1"
-                  WHEN 2 THEN "2"
-                  WHEN 3 THEN "3"
-                  ELSE level END AS Level,
-       manager_ids[0] AS L1managerid,
-       manager_firstnames[0] AS L1managerFirstName,
-       manager_lastnames[0] AS L1managerLastName,
-       manager_emails[0] AS L1managerEmail,
-       manager_ids[1] AS L2managerid,
-       manager_firstnames[1] AS L2managerFirstName,
-       manager_lastnames[1] AS L2managerLastName,
-       manager_emails[1] AS L2managerEmail,
-       manager_ids[2] AS L3managerid,
-       manager_firstnames[2] AS L3managerFirstName,
-       manager_lastnames[2] AS L3managerLastName,
-       manager_emails[2] AS L3managerEmail,
-       // Extend for more levels as needed
-       ...
+RETURN 
+    user.employeeNumber AS employeeNumber,
+    user.managerid AS managerid,
+    Level,
+    
+    // L1 manager details
+    L1.employeeNumber AS L1managerid,
+    L1_name.givenName AS L1managerFirstName,
+    L1_name.familyName AS L1managerLastName,
+    L1_email.WorkEmail AS L1managerEmail,
+    
+    // L2 manager details
+    L2.employeeNumber AS L2managerid,
+    L2_name.givenName AS L2managerFirstName,
+    L2_name.familyName AS L2managerLastName,
+    L2_email.WorkEmail AS L2managerEmail,
+    
+    // L3 manager details
+    L3.employeeNumber AS L3managerid,
+    L3_name.givenName AS L3managerFirstName,
+    L3_name.familyName AS L3managerLastName,
+    L3_email.WorkEmail AS L3managerEmail
+
+// Get name and email attributes for each level's manager
+OPTIONAL MATCH (L1)-[:HAS_ATTRIBUTE]->(L1_name:Name)
+OPTIONAL MATCH (L1)-[:HAS_ATTRIBUTE]->(L1_email:WorkEmail)
+OPTIONAL MATCH (L2)-[:HAS_ATTRIBUTE]->(L2_name:Name)
+OPTIONAL MATCH (L2)-[:HAS_ATTRIBUTE]->(L2_email:WorkEmail)
+OPTIONAL MATCH (L3)-[:HAS_ATTRIBUTE]->(L3_name:Name)
+OPTIONAL MATCH (L3)-[:HAS_ATTRIBUTE]->(L3_email:WorkEmail)
