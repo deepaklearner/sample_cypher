@@ -68,29 +68,30 @@ Multiple issue. there are total 7 rows in output. Duplicate employeeNumber. also
 
 v1.4
 
-// Step 1: Set Level for the CEO (Level 1)
+// Step 1: Set the CEO's Level to 1
 MATCH (ceo:User {employeeNumber: '2000001'})
 SET ceo.Level = 1
 
-// Step 2: Iterate over the hierarchy and set levels for others
+// Step 2: Use a recursive approach to set levels for the entire hierarchy
 WITH ceo
-MATCH (n:User)-[:REPORTS_TO]->(m:User)
-WHERE m.employeeNumber = ceo.employeeNumber  // Match the direct reports to CEO
-SET n.Level = 2
-
-// Step 3: Set levels for the rest of the hierarchy iteratively
-WITH ceo
-MATCH (n:User)-[:REPORTS_TO]->(m:User)
-WHERE m.Level = 2
-SET n.Level = 3
-
-WITH ceo
-MATCH (n:User)-[:REPORTS_TO]->(m:User)
-WHERE m.Level = 3
-SET n.Level = 4
-
-// Step 4: Return the final result
-RETURN n.employeeNumber, m.employeeNumber AS managerid, n.Level
+CALL {
+    WITH ceo
+    // Match direct reports of the CEO
+    MATCH (n:User)-[:REPORTS_TO]->(m:User)
+    WHERE m.employeeNumber = ceo.employeeNumber
+    SET n.Level = m.Level + 1
+    RETURN n, m
+    UNION
+    // Recursively match and propagate the level down the hierarchy
+    MATCH (n:User)-[:REPORTS_TO]->(m:User)
+    WHERE m.Level IS NOT NULL
+    AND n.Level IS NULL
+    SET n.Level = m.Level + 1
+    RETURN n, m
+} 
+WITH DISTINCT n
+// Step 3: Return the results without duplicates
+RETURN n.employeeNumber, n.managerid, n.Level
 ORDER BY n.Level
 
 
