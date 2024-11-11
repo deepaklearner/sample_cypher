@@ -28,8 +28,14 @@ RETURN
     user.managerid AS managerid,
     Level,
     
+    // For CEO, display the managerid as L1managerid; for others, use L1’s employeeNumber
+    CASE 
+      WHEN Level = 1 THEN user.managerid 
+      WHEN Level >= 2 THEN L1.employeeNumber 
+      ELSE NULL 
+    END AS L1managerid,
+    
     // Only populate L1 manager details if Level is 2 or higher
-    CASE WHEN Level >= 2 THEN L1.employeeNumber ELSE NULL END AS L1managerid,
     CASE WHEN Level >= 2 THEN L1_name.givenName ELSE NULL END AS L1managerFirstName,
     CASE WHEN Level >= 2 THEN L1_name.familyName ELSE NULL END AS L1managerLastName,
     CASE WHEN Level >= 2 THEN L1_email.WorkEmail ELSE NULL END AS L1managerEmail,
