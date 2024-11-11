@@ -1,8 +1,8 @@
 // Match the user node and up to three levels of managers in reverse order
 MATCH (user:User)
-OPTIONAL MATCH (user)-[:REPORTS_TO]->(L1:User)
-OPTIONAL MATCH (L1)-[:REPORTS_TO]->(L2:User)
+OPTIONAL MATCH (L1:User)-[:REPORTS_TO]->(L2:User)
 OPTIONAL MATCH (L2)-[:REPORTS_TO]->(L3:User)
+OPTIONAL MATCH (L3)-[:REPORTS_TO]->(user)
 
 // Get name and email attributes for each level's manager and for the user (in case user is CEO)
 OPTIONAL MATCH (user)-[:HAS_ATTRIBUTE]->(user_name:Name)
