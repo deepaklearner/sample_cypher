@@ -3,10 +3,12 @@
 MATCH (e:User)
 WHERE e.managerid IS NOT NULL
 
+// multiple rows of json of e and.. managers a list of value fetched from every json
 WITH e, [e.managerid] AS managers
 
-// Collect manager hierarchy up to 4 levels, ensuring no duplicates
+// Collect manager hierarchy up to 4 levels, ensuring no duplicates 
 OPTIONAL MATCH (m:User {employeeNumber: e.managerid})
+
 WITH e, m, 
      CASE WHEN NOT m.employeeNumber IN managers THEN managers + [m.employeeNumber] ELSE managers END AS managers
 WHERE m IS NOT NULL
