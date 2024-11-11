@@ -72,27 +72,19 @@ v1.4
 MATCH (ceo:User {employeeNumber: '2000001'})
 SET ceo.Level = 1
 
-// Step 2: Use a recursive approach to set levels for the entire hierarchy
+// Step 2: Use a recursive query to propagate levels down the hierarchy
 WITH ceo
-CALL {
-    WITH ceo
-    // Match direct reports of the CEO
-    MATCH (n:User)-[:REPORTS_TO]->(m:User)
-    WHERE m.employeeNumber = ceo.employeeNumber
-    SET n.Level = m.Level + 1
-    RETURN n, m
-    UNION
-    // Recursively match and propagate the level down the hierarchy
-    MATCH (n:User)-[:REPORTS_TO]->(m:User)
-    WHERE m.Level IS NOT NULL
-    AND n.Level IS NULL
-    SET n.Level = m.Level + 1
-    RETURN n, m
-} 
+CALL apoc.refactor.cloneNodes({nodes:[ceo], relationshipTypes:['REPORTS_TO']}) YIELD node
+WITH node
+MATCH (n:User)-[:REPORTS_TO]->(m:User)
+WHERE m.Level IS NOT NULL AND n.Level IS NULL
+SET n.Level = m.Level + 1
+
+// Step 3: Return the results with no duplicates
 WITH DISTINCT n
-// Step 3: Return the results without duplicates
 RETURN n.employeeNumber, n.managerid, n.Level
 ORDER BY n.Level
+
 
 
 
