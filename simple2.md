@@ -26,9 +26,21 @@ WITH e, m4,
      CASE WHEN NOT m4.employeeNumber IN managers THEN managers + [m4.employeeNumber] ELSE managers END AS managers
 WHERE m4 IS NOT NULL
 
-// Fetching FirstName, LastName, and Email for each manager level
-OPTIONAL MATCH (m)-[:HAS_ATTRIBUTE]->(name:Name)
-OPTIONAL MATCH (m)-[:HAS_ATTRIBUTE]->(email:HomeEmail)
+// Fetch FirstName, LastName, and Email for each manager level only once
+OPTIONAL MATCH (e)-[:HAS_ATTRIBUTE]->(eName:Name)
+OPTIONAL MATCH (e)-[:HAS_ATTRIBUTE]->(eEmail:HomeEmail)
+
+OPTIONAL MATCH (m)-[:HAS_ATTRIBUTE]->(mName:Name)
+OPTIONAL MATCH (m)-[:HAS_ATTRIBUTE]->(mEmail:HomeEmail)
+
+OPTIONAL MATCH (m2)-[:HAS_ATTRIBUTE]->(m2Name:Name)
+OPTIONAL MATCH (m2)-[:HAS_ATTRIBUTE]->(m2Email:HomeEmail)
+
+OPTIONAL MATCH (m3)-[:HAS_ATTRIBUTE]->(m3Name:Name)
+OPTIONAL MATCH (m3)-[:HAS_ATTRIBUTE]->(m3Email:HomeEmail)
+
+OPTIONAL MATCH (m4)-[:HAS_ATTRIBUTE]->(m4Name:Name)
+OPTIONAL MATCH (m4)-[:HAS_ATTRIBUTE]->(m4Email:HomeEmail)
 
 // Output the result
 RETURN e.employeeNumber AS employeeNumber, 
@@ -40,26 +52,28 @@ RETURN e.employeeNumber AS employeeNumber,
            WHEN size(managers) = 3 THEN 4
            ELSE 0 
        END AS Level,  // Adjust level for CEO
+       
+       // Manager IDs at each level
        CASE WHEN size(managers) > 0 THEN managers[0] ELSE NULL END AS L1managerid,
        CASE WHEN size(managers) > 1 THEN managers[1] ELSE NULL END AS L2managerid,
        CASE WHEN size(managers) > 2 THEN managers[2] ELSE NULL END AS L3managerid,
        CASE WHEN size(managers) > 3 THEN managers[3] ELSE NULL END AS L4managerid,
        
-       // Manager Details
-       CASE WHEN size(managers) > 0 THEN name.givenName ELSE NULL END AS L1managerFirstName,
-       CASE WHEN size(managers) > 0 THEN name.familyName ELSE NULL END AS L1managerLastName,
-       CASE WHEN size(managers) > 0 THEN email.email ELSE NULL END AS L1managerEmail,
+       // Manager Names and Emails for each level
+       CASE WHEN size(managers) > 0 THEN mName.givenName ELSE NULL END AS L1managerFirstName,
+       CASE WHEN size(managers) > 0 THEN mName.familyName ELSE NULL END AS L1managerLastName,
+       CASE WHEN size(managers) > 0 THEN mEmail.email ELSE NULL END AS L1managerEmail,
 
-       CASE WHEN size(managers) > 1 THEN name.givenName ELSE NULL END AS L2managerFirstName,
-       CASE WHEN size(managers) > 1 THEN name.familyName ELSE NULL END AS L2managerLastName,
-       CASE WHEN size(managers) > 1 THEN email.email ELSE NULL END AS L2managerEmail,
+       CASE WHEN size(managers) > 1 THEN m2Name.givenName ELSE NULL END AS L2managerFirstName,
+       CASE WHEN size(managers) > 1 THEN m2Name.familyName ELSE NULL END AS L2managerLastName,
+       CASE WHEN size(managers) > 1 THEN m2Email.email ELSE NULL END AS L2managerEmail,
 
-       CASE WHEN size(managers) > 2 THEN name.givenName ELSE NULL END AS L3managerFirstName,
-       CASE WHEN size(managers) > 2 THEN name.familyName ELSE NULL END AS L3managerLastName,
-       CASE WHEN size(managers) > 2 THEN email.email ELSE NULL END AS L3managerEmail,
+       CASE WHEN size(managers) > 2 THEN m3Name.givenName ELSE NULL END AS L3managerFirstName,
+       CASE WHEN size(managers) > 2 THEN m3Name.familyName ELSE NULL END AS L3managerLastName,
+       CASE WHEN size(managers) > 2 THEN m3Email.email ELSE NULL END AS L3managerEmail,
 
-       CASE WHEN size(managers) > 3 THEN name.givenName ELSE NULL END AS L4managerFirstName,
-       CASE WHEN size(managers) > 3 THEN name.familyName ELSE NULL END AS L4managerLastName,
-       CASE WHEN size(managers) > 3 THEN email.email ELSE NULL END AS L4managerEmail
+       CASE WHEN size(managers) > 3 THEN m4Name.givenName ELSE NULL END AS L4managerFirstName,
+       CASE WHEN size(managers) > 3 THEN m4Name.familyName ELSE NULL END AS L4managerLastName,
+       CASE WHEN size(managers) > 3 THEN m4Email.email ELSE NULL END AS L4managerEmail
 
 ORDER BY e.employeeNumber
