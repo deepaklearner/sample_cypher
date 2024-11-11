@@ -1,13 +1,17 @@
 MATCH (user:User)
-OPTIONAL MATCH (user)-[:REPORTS_TO*]->(manager:User)
-WITH user, manager, length((user)-[:REPORTS_TO*]->(manager)) AS pathLength
+MATCH path = (user)-[:REPORTS_TO*]->(manager:User)
+WITH user, path, length(path) AS level
 WITH user, 
      CASE 
-         WHEN user.managerid = user.employeeNumber THEN 1  // CEO (self-reporting) has level 1
-         ELSE pathLength + 1  // Level is number of hops to CEO + 1
+         WHEN user.managerid = user.employeeNumber THEN 1  // CEO (self-reporting) is at level 1
+         ELSE level + 1  // Level is number of hops + 1
      END AS level,
      COLLECT(manager) AS managers
-WITH user, level, managers[0] AS L1manager, managers[1] AS L2manager, managers[2] AS L3manager, managers[3] AS L4manager
+WITH user, level, 
+     managers[0] AS L1manager,
+     managers[1] AS L2manager,
+     managers[2] AS L3manager,
+     managers[3] AS L4manager
 RETURN user.employeeNumber AS employeeNumber,
        user.managerid AS managerid,
        level,
