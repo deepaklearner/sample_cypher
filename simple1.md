@@ -1,29 +1,35 @@
 v1.1
 
-MATCH (n:User)
-WHERE n.managerid IS NOT NULL
-WITH n
-// Step 1: Get the direct manager of the employee
-OPTIONAL MATCH (n)-[:REPORTS_TO]->(m1:User)
-WITH n, m1
-// Step 2: Get the second-level manager (manager of the manager)
-OPTIONAL MATCH (m1)-[:REPORTS_TO]->(m2:User)
-WITH n, m1, m2
-// Step 3: Get the third-level manager (manager of the second-level manager)
-OPTIONAL MATCH (m2)-[:REPORTS_TO]->(m3:User)
-WITH n, m1, m2, m3
-// Step 4: Get the fourth-level manager (manager of the third-level manager)
-OPTIONAL MATCH (m3)-[:REPORTS_TO]->(m4:User)
-WITH n, m1, m2, m3, m4
+// Find the CEO (the user who doesn't report to anyone)
+MATCH (ceo:User)
+WHERE NOT (ceo)<-[:REPORTS_TO]-()
+WITH ceo
+
+// Traverse downwards from the CEO to find all employees and their reporting structure
+OPTIONAL MATCH path = (ceo)<-[:REPORTS_TO*]-(n:User)
+WITH n, path
+
+// Calculate the level of each employee based on the length of the path (CEO is level 1)
+WITH n, length(path) + 1 AS level, path
+
+// Collect manager IDs for each level of the hierarchy
+WITH n, level, 
+     collect( CASE WHEN level = 1 THEN ceo.employeeNumber END ) AS L1managerid,
+     collect( CASE WHEN level = 2 THEN head(nodes(path)).employeeNumber END ) AS L2managerid,
+     collect( CASE WHEN level = 3 THEN head(nodes(tail(path))).employeeNumber END ) AS L3managerid,
+     collect( CASE WHEN level = 4 THEN head(nodes(tail(tail(path)))).employeeNumber END ) AS L4managerid
+
+// Return the employee information, their manager IDs, and the level
 RETURN 
-  n.employeeNumber AS employeeNumber,
-  n.managerid AS managerid,
-  CASE WHEN m1 IS NULL THEN 1 ELSE 2 END AS Level, 
-  m1.employeeNumber AS L1managerid,
-  m2.employeeNumber AS L2managerid,
-  m3.employeeNumber AS L3managerid,
-  m4.employeeNumber AS L4managerid
+    n.employeeNumber AS employeeNumber, 
+    n.managerid AS managerid,
+    level AS Level,
+    head(L1managerid) AS L1managerid,
+    head(L2managerid) AS L2managerid,
+    head(L3managerid) AS L3managerid,
+    head(L4managerid) AS L4managerid
 ORDER BY n.employeeNumber;
+
 
 
 
