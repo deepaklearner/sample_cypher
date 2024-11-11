@@ -1,3 +1,27 @@
+v1.4
+
+// Step 1: Identify the CEO (user who reports to themselves) and set their level to 1
+MATCH (ceo:User)
+WHERE ceo.employeeNumber = ceo.managerid
+WITH ceo
+// Return the CEO with level 1
+RETURN ceo.employeeNumber AS employeeNumber, ceo.employeeNumber AS managerid, 1 AS Level
+UNION
+// Step 2: Find all direct reports to the CEO and set their level to 2
+MATCH (n:User)-[:REPORTS_TO]->(ceo:User)
+WHERE ceo.employeeNumber = n.managerid
+RETURN n.employeeNumber AS employeeNumber, ceo.employeeNumber AS managerid, 2 AS Level
+UNION
+// Step 3: Recursively find indirect reports and calculate the level dynamically
+MATCH (n:User)-[:REPORTS_TO*]->(ceo:User)
+WHERE n.managerid <> n.employeeNumber  // Avoid users reporting to themselves
+WITH n, ceo, LENGTH((n)-[:REPORTS_TO*]->(ceo)) AS pathLength
+WITH n, ceo, pathLength + 1 AS level  // Add 1 to the path length to calculate the correct level
+RETURN n.employeeNumber AS employeeNumber, ceo.employeeNumber AS managerid, level
+ORDER BY level
+
+
+
 In Neo4j, using this cypher “””CALL apoc.periodic.iterate( " MATCH (n:User) WHERE n.managerid IS NOT NULL RETURN n ", " OPTIONAL MATCH (n)-[r:REPORTS_TO]->(m:User) WHERE n.managerid <> m.employeeNumber DELETE r WITH n MATCH (m:User {employeeNumber: n.managerid}) MERGE (n)-[:REPORTS_TO]->(m) ", {batchSize: 10000, parallel: false} )”””, I am creating some nodes and relationships.
 
 
@@ -65,27 +89,6 @@ v1.3
     ORDER BY n.Level
 
 Multiple issue. there are total 7 rows in output. Duplicate employeeNumber. also for 2000001 Level is coming as 2 instead of 1
-
-v1.4
-
-// Step 1: Identify the CEO (user who reports to themselves) and set their level to 1
-MATCH (ceo:User)
-WHERE ceo.employeeNumber = ceo.managerid
-WITH ceo
-// Return the CEO with level 1
-RETURN ceo.employeeNumber AS employeeNumber, ceo.employeeNumber AS managerid, 1 AS Level
-UNION
-// Step 2: Find all direct reports to the CEO and set their level to 2
-MATCH (n:User)-[:REPORTS_TO]->(ceo:User)
-WHERE ceo.employeeNumber = n.managerid
-RETURN n.employeeNumber AS employeeNumber, ceo.employeeNumber AS managerid, 2 AS Level
-UNION
-// Step 3: Recursively find indirect reports and calculate the level dynamically
-MATCH (n:User)-[:REPORTS_TO*]->(ceo:User)
-WHERE n.managerid <> n.employeeNumber  // Avoid users reporting to themselves
-WITH n, ceo, LENGTH((n)-[:REPORTS_TO*]->(ceo)) + 1 AS level
-RETURN n.employeeNumber AS employeeNumber, ceo.employeeNumber AS managerid, level
-ORDER BY level
 
 
 
