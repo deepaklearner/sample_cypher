@@ -1,6 +1,6 @@
 MATCH (e:User)
 OPTIONAL MATCH path = (e)-[:REPORTS_TO*]->(m:User)
-WITH e, m, LENGTH(path) AS level, COLLECT(m.employeeNumber) AS managers
+WITH e, path, LENGTH(path) AS level, COLLECT(m.employeeNumber) AS managers
 WITH e, level, managers
 ORDER BY level DESC
 WITH e, level, 
