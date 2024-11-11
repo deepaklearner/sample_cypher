@@ -31,8 +31,7 @@ RETURN
     // For CEO, display the managerid as L1managerid; for others, use L1’s employeeNumber
     CASE 
       WHEN Level = 1 THEN user.managerid 
-      WHEN Level >= 2 THEN L1.employeeNumber 
-      ELSE NULL 
+      ELSE L1.employeeNumber 
     END AS L1managerid,
     
     // Only populate L1 manager details if Level is 2 or higher
