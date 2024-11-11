@@ -50,15 +50,33 @@ v1.2:
 
 v1.3
 
-// Set Level for the CEO
+    // Set Level for the CEO
+    MATCH (ceo:User {employeeNumber: '2000001'})
+    SET ceo.Level = 1
+
+    // Traverse the hierarchy and calculate Level for others
+    WITH ceo
+    MATCH path = (n:User)-[:REPORTS_TO*]->(ceo)  // Match the path from the user to the CEO
+    WITH n, LENGTH(path) AS level  // Calculate the length of the path (number of hops)
+    SET n.Level = level + 1  // Set the level, adding 1 to the path length
+
+    // Return the updated results
+    RETURN n.employeeNumber, n.managerid, n.Level
+    ORDER BY n.Level
+
+Multiple issue. there are total 7 rows in output. Duplicate employeeNumber. also for 2000001 Level is coming as 2 instead of 1
+
+v1.4
+
+// Set Level for the CEO first (Level 1)
 MATCH (ceo:User {employeeNumber: '2000001'})
 SET ceo.Level = 1
 
-// Traverse the hierarchy and calculate Level for others
+// Now traverse the hierarchy, but exclude the CEO from further traversals
 WITH ceo
-MATCH path = (n:User)-[:REPORTS_TO*]->(ceo)  // Match the path from the user to the CEO
-WITH n, LENGTH(path) AS level  // Calculate the length of the path (number of hops)
-SET n.Level = level + 1  // Set the level, adding 1 to the path length
+MATCH path = (n:User)-[:REPORTS_TO*]->(ceo)  // Match path from user to CEO
+WITH DISTINCT n, LENGTH(path) AS level  // Use DISTINCT to ensure each user is only considered once
+SET n.Level = level + 1  // Set Level to be path length + 1
 
 // Return the updated results
 RETURN n.employeeNumber, n.managerid, n.Level
