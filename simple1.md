@@ -1,3 +1,41 @@
+v1.3
+
+MATCH (e:User)
+WHERE e.managerid IS NOT NULL
+
+WITH e, 1 AS level, [e.managerid] AS managers
+
+// Collect manager hierarchy up to 4 levels, ensuring no duplicates and updating the level correctly
+OPTIONAL MATCH (m:User {employeeNumber: e.managerid})
+WITH e, m, level + 1 AS level, 
+     CASE WHEN NOT m.employeeNumber IN managers THEN managers + [m.employeeNumber] ELSE managers END AS managers
+WHERE m IS NOT NULL
+
+OPTIONAL MATCH (m2:User {employeeNumber: m.managerid})
+WITH e, m2, level + 1 AS level, 
+     CASE WHEN NOT m2.employeeNumber IN managers THEN managers + [m2.employeeNumber] ELSE managers END AS managers
+WHERE m2 IS NOT NULL
+
+OPTIONAL MATCH (m3:User {employeeNumber: m2.managerid})
+WITH e, m3, level + 1 AS level, 
+     CASE WHEN NOT m3.employeeNumber IN managers THEN managers + [m3.employeeNumber] ELSE managers END AS managers
+WHERE m3 IS NOT NULL
+
+OPTIONAL MATCH (m4:User {employeeNumber: m3.managerid})
+WITH e, m4, level + 1 AS level, 
+     CASE WHEN NOT m4.employeeNumber IN managers THEN managers + [m4.employeeNumber] ELSE managers END AS managers
+WHERE m4 IS NOT NULL
+
+// Output the result with correct levels
+RETURN e.employeeNumber AS employeeNumber, e.managerid AS managerid,
+       level AS Level,
+       CASE WHEN size(managers) > 0 THEN managers[0] ELSE NULL END AS L1managerid,
+       CASE WHEN size(managers) > 1 THEN managers[1] ELSE NULL END AS L2managerid,
+       CASE WHEN size(managers) > 2 THEN managers[2] ELSE NULL END AS L3managerid,
+       CASE WHEN size(managers) > 3 THEN managers[3] ELSE NULL END AS L4managerid
+ORDER BY e.employeeNumber
+
+
 v1.2
 
 MATCH (e:User)
@@ -72,6 +110,13 @@ Sample report format:
 | 2000002        | 2000001   | 5     | 2000001     |   2000001          |   2000001          |  2000001           |
 | 2000003        | 2000002   | 5     | 2000002     | 2000001     |    2000001         |  2000001           |
 | 2000004        | 2000003   | 5     | 2000003     | 2000002     | 2000001     |   2000001          |
+
+| employeeNumber | managerid | Level | L1managerid | L2managerid | L3managerid | L4managerid |
+|----------------|-----------|-------|-------------|-------------|-------------|-------------|
+| 2000001        | 2000001   | 5     | 2000001     |   null          |      null       | null            |
+| 2000002        | 2000001   | 5     | 2000001     |       null      |  null           |    null         |
+| 2000003        | 2000002   | 5     | 2000002     | 2000001     |             |   null          |
+| 2000004        | 2000003   | 5     | 2000003     | 2000002     | 2000001     |   null          |
 
 """
 Sample data:
