@@ -1,9 +1,19 @@
+// Match the user node and up to three levels of managers
 MATCH (user:User)
 OPTIONAL MATCH (user)-[:REPORTS_TO]->(L1:User)
 OPTIONAL MATCH (L1)-[:REPORTS_TO]->(L2:User)
 OPTIONAL MATCH (L2)-[:REPORTS_TO]->(L3:User)
 
+// Get name and email attributes for each level's manager
+OPTIONAL MATCH (L1)-[:HAS_ATTRIBUTE]->(L1_name:Name)
+OPTIONAL MATCH (L1)-[:HAS_ATTRIBUTE]->(L1_email:WorkEmail)
+OPTIONAL MATCH (L2)-[:HAS_ATTRIBUTE]->(L2_name:Name)
+OPTIONAL MATCH (L2)-[:HAS_ATTRIBUTE]->(L2_email:WorkEmail)
+OPTIONAL MATCH (L3)-[:HAS_ATTRIBUTE]->(L3_name:Name)
+OPTIONAL MATCH (L3)-[:HAS_ATTRIBUTE]->(L3_email:WorkEmail)
+
 WITH user, L1, L2, L3,
+     L1_name, L1_email, L2_name, L2_email, L3_name, L3_email,
      CASE 
        WHEN user.employeeNumber = user.managerid THEN 1
        WHEN L1 IS NOT NULL AND L2 IS NULL THEN 2
@@ -34,11 +44,3 @@ RETURN
     L3_name.givenName AS L3managerFirstName,
     L3_name.familyName AS L3managerLastName,
     L3_email.WorkEmail AS L3managerEmail
-
-// Get name and email attributes for each level's manager
-OPTIONAL MATCH (L1)-[:HAS_ATTRIBUTE]->(L1_name:Name)
-OPTIONAL MATCH (L1)-[:HAS_ATTRIBUTE]->(L1_email:WorkEmail)
-OPTIONAL MATCH (L2)-[:HAS_ATTRIBUTE]->(L2_name:Name)
-OPTIONAL MATCH (L2)-[:HAS_ATTRIBUTE]->(L2_email:WorkEmail)
-OPTIONAL MATCH (L3)-[:HAS_ATTRIBUTE]->(L3_name:Name)
-OPTIONAL MATCH (L3)-[:HAS_ATTRIBUTE]->(L3_email:WorkEmail)
