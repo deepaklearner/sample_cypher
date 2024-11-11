@@ -2,7 +2,7 @@ v1.3
 
 MATCH (e:User)
 WHERE e.managerid IS NOT NULL
-WITH e, [e] AS path
+WITH e, [] AS path
 
 // First level of reporting
 OPTIONAL MATCH (e)-[:REPORTS_TO]->(m:User)
@@ -38,6 +38,7 @@ RETURN e.employeeNumber AS employeeNumber,
        END AS Level,
        L1managerid, L2managerid, L3managerid, L4managerid
 ORDER BY e.employeeNumber;
+
 
 
 
