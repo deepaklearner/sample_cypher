@@ -68,39 +68,40 @@ Multiple issue. there are total 7 rows in output. Duplicate employeeNumber. also
 
 v1.4
 
-// Step 1: Identify the CEO (the user who reports to themselves)
+// Step 1: Identify the CEO dynamically
 MATCH (ceo:User)
 WHERE ceo.employeeNumber = ceo.managerid
 SET ceo.Level = 1
 
-// Step 2: Recursively calculate levels for the rest of the hierarchy
+// Step 2: Propagate levels down the hierarchy
 WITH ceo
-// Step 2a: First, match direct reports to the CEO (Level 2)
+// Start with the CEO's direct reports (Level 2)
 MATCH (n:User)-[:REPORTS_TO]->(m:User)
 WHERE m.employeeNumber = ceo.employeeNumber
 SET n.Level = 2
 
-// Step 2b: Now propagate levels down the hierarchy. 
-// We match users at Level 2 and propagate down.
+// Step 3: Recursively propagate the level down to other users
+WITH ceo
+MATCH (n:User)-[:REPORTS_TO]->(m:User)
+WHERE m.Level IS NOT NULL AND n.Level IS NULL
+SET n.Level = m.Level + 1
+
+// Step 4: Continue propagating levels until all users have been assigned a level
 WITH DISTINCT n
 MATCH (n)-[:REPORTS_TO]->(m:User)
-WHERE m.Level = 2
-SET n.Level = 3
+WHERE m.Level IS NOT NULL AND n.Level IS NULL
+SET n.Level = m.Level + 1
 
 WITH DISTINCT n
 MATCH (n)-[:REPORTS_TO]->(m:User)
-WHERE m.Level = 3
-SET n.Level = 4
+WHERE m.Level IS NOT NULL AND n.Level IS NULL
+SET n.Level = m.Level + 1
 
-WITH DISTINCT n
-MATCH (n)-[:REPORTS_TO]->(m:User)
-WHERE m.Level = 4
-SET n.Level = 5
-
-// Step 3: Return the final results, ensuring no duplicates
+// Step 5: Return all users with their level and manager information
 WITH DISTINCT n
 RETURN n.employeeNumber, n.managerid, n.Level
 ORDER BY n.Level
+
 
 
 
