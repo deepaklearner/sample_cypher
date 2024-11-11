@@ -21,3 +21,13 @@ First part (the MATCH query): This retrieves users (n) where the managerid is no
 Second part (the OPTIONAL MATCH, DELETE, and MERGE query): It finds any existing REPORTS_TO relationships that are invalid (where n.managerid does not match m.employeeNumber), deletes them, and then ensures the correct relationship is established by MERGEing a new one.
 batchSize: 10000: Processes in batches of 10,000 nodes.
 parallel: false: Runs the query in a single-threaded manner.
+
+Take inspiration from above cypher and helo me to write a new cypher query to create a report with below columns.
+
+Sample report with sample data:
+| employeeNumber | managerid | Level | L1managerid | L2managerid | L3managerid | L4managerid |
+|----------------|-----------|-------|-------------|-------------|-------------|-------------|
+| 2000001        | 2000001   | 1     | 2000001     |             |             |             |
+| 2000002        | 2000001   | 2     | 2000001     |             |             |             |
+| 2000003        | 2000002   | 3     | 2000002     | 2000001     |             |             |
+| 2000004        | 2000003   | 4     | 2000003     | 2000002     | 2000001     |             |
