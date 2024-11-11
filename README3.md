@@ -1,4 +1,4 @@
-// Match the user node and up to three levels of managers
+// Match the user node and up to three levels of managers in reverse order
 MATCH (user:User)
 OPTIONAL MATCH (user)-[:REPORTS_TO]->(L1:User)
 OPTIONAL MATCH (L1)-[:REPORTS_TO]->(L2:User)
@@ -18,10 +18,10 @@ OPTIONAL MATCH (L3)-[:HAS_ATTRIBUTE]->(L3_email:WorkEmail)
 WITH user, L1, L2, L3,
      user_name, user_email, L1_name, L1_email, L2_name, L2_email, L3_name, L3_email,
      CASE 
-       WHEN user.employeeNumber = user.managerid THEN 1
-       WHEN L1 IS NOT NULL AND L2 IS NULL AND L3 IS NULL THEN 2
-       WHEN L1 IS NOT NULL AND L2 IS NOT NULL AND L3 IS NULL THEN 3
-       WHEN L1 IS NOT NULL AND L2 IS NOT NULL AND L3 IS NOT NULL THEN 4
+       WHEN user.employeeNumber = user.managerid THEN 1  // CEO
+       WHEN L1 IS NOT NULL AND L2 IS NULL THEN 2  // Level 2 (one manager)
+       WHEN L1 IS NOT NULL AND L2 IS NOT NULL AND L3 IS NULL THEN 3  // Level 3 (two managers)
+       WHEN L1 IS NOT NULL AND L2 IS NOT NULL AND L3 IS NOT NULL THEN 4  // Level 4 (three managers)
        ELSE NULL 
      END AS Level
 
