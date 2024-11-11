@@ -1,15 +1,20 @@
 MATCH (user:User)
-OPTIONAL MATCH path = (user)-[:REPORTS_TO*0..]->(manager:User)
-WITH user, path, length(path) AS level
-WITH user, level, COLLECT(manager) AS managers
+OPTIONAL MATCH (user)-[:REPORTS_TO*]->(manager:User)
+WITH user, manager, length((user)-[:REPORTS_TO*]->(manager)) AS level
+WHERE level > 0  // Ensuring we only consider valid levels greater than 0
 WITH user, level, 
+     COLLECT(manager) AS managers
+WITH user, level,
      managers[0] AS L1manager,
      managers[1] AS L2manager,
      managers[2] AS L3manager,
      managers[3] AS L4manager
 RETURN user.employeeNumber AS employeeNumber,
        user.managerid AS managerid,
-       level,
+       CASE 
+           WHEN user.managerid = user.employeeNumber THEN 1 
+           ELSE level + 1 
+       END AS Level,  // Adjust level calculation for CEO and others
        CASE WHEN L1manager IS NOT NULL THEN L1manager.employeeNumber END AS L1managerid,
        CASE WHEN L1manager IS NOT NULL THEN L1manager.name.givenName END AS L1managerFirstName,
        CASE WHEN L1manager IS NOT NULL THEN L1manager.name.familyName END AS L1managerLastName,
