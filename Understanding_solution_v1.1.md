@@ -6,7 +6,7 @@ WHERE e.managerid IS NOT NULL
 // multiple rows of json of e and.. managers a list of value fetched from every json
 WITH e, [e.managerid] AS managers
 
-// WITH operates on a row-by-row basis,
+// WITH operates on a row-by-row basis
 
 // Collect manager hierarchy up to 4 levels, ensuring no duplicates 
 OPTIONAL MATCH (m:User {employeeNumber: e.managerid})
@@ -45,3 +45,71 @@ RETURN e.employeeNumber AS employeeNumber,
        CASE WHEN size(managers) > 2 THEN managers[2] ELSE NULL END AS L3managerid,
        CASE WHEN size(managers) > 3 THEN managers[3] ELSE NULL END AS L4managerid
 ORDER BY e.employeeNumber
+
+            +--------------------+
+            | 1. Start (MATCH)    |
+            | - Find all Users    |
+            | - Filter where       |
+            |   managerid IS NOT  |
+            |   NULL              |
+            +--------------------+
+                        |
+                        v
+            +---------------------------+
+            | 2. Initialize Managers List|
+            | - Set managers = [e.managerid] |
+            +---------------------------+
+                        |
+                        v
+            +---------------------------+
+            | 3. OPTIONAL MATCH Level 1 |
+            | - Match m:User where      |
+            |   m.employeeNumber = e.managerid |
+            | - Add m.employeeNumber to |
+            |   managers list (if not  |
+            |   already in it)          |
+            | - If m is NULL, no change |
+            +---------------------------+
+                        |
+                        v
+            +---------------------------+
+            | 4. OPTIONAL MATCH Level 2 |
+            | - Match m2:User where     |
+            |   m2.employeeNumber = m.managerid |
+            | - Add m2.employeeNumber to|
+            |   managers list (if not   |
+            |   already in it)          |
+            | - If m2 is NULL, no change|
+            +---------------------------+
+                        |
+                        v
+            +---------------------------+
+            | 5. OPTIONAL MATCH Level 3 |
+            | - Match m3:User where     |
+            |   m3.employeeNumber = m2.managerid |
+            | - Add m3.employeeNumber to|
+            |   managers list (if not   |
+            |   already in it)          |
+            | - If m3 is NULL, no change|
+            +---------------------------+
+                        |
+                        v
+            +---------------------------+
+            | 6. OPTIONAL MATCH Level 4 |
+            | - Match m4:User where     |
+            |   m4.employeeNumber = m3.managerid |
+            | - Add m4.employeeNumber to|
+            |   managers list (if not   |
+            |   already in it)          |
+            | - If m4 is NULL, no change|
+            +---------------------------+
+                        |
+                        v
+            +-----------------------------+
+            | 7. Return Final Results     |
+            | - Calculate Level           |
+            |   (based on size of         |
+            |    managers list)           |
+            | - Output managers at each   |
+            |   level (L1, L2, L3, L4)    |
+            +-----------------------------+
