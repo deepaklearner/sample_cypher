@@ -1,33 +1,16 @@
-MATCH (user:User)
-MATCH path = (user)-[:REPORTS_TO*]->(manager:User)
-WITH user, path, length(path) AS level
-WITH user, 
-     CASE 
-         WHEN user.managerid = user.employeeNumber THEN 1  // CEO (self-reporting) is at level 1
-         ELSE level + 1  // Level is number of hops + 1
-     END AS level,
-     COLLECT(manager) AS managers
-WITH user, level, 
-     managers[0] AS L1manager,
-     managers[1] AS L2manager,
-     managers[2] AS L3manager,
-     managers[3] AS L4manager
-RETURN user.employeeNumber AS employeeNumber,
-       user.managerid AS managerid,
-       level,
-       CASE WHEN L1manager IS NOT NULL THEN L1manager.employeeNumber END AS L1managerid,
-       CASE WHEN L1manager IS NOT NULL THEN L1manager.name.givenName END AS L1managerFirstName,
-       CASE WHEN L1manager IS NOT NULL THEN L1manager.name.familyName END AS L1managerLastName,
-       CASE WHEN L1manager IS NOT NULL THEN L1manager.workEmail.email END AS L1managerEmail,
-       CASE WHEN L2manager IS NOT NULL THEN L2manager.employeeNumber END AS L2managerid,
-       CASE WHEN L2manager IS NOT NULL THEN L2manager.name.givenName END AS L2managerFirstName,
-       CASE WHEN L2manager IS NOT NULL THEN L2manager.name.familyName END AS L2managerLastName,
-       CASE WHEN L2manager IS NOT NULL THEN L2manager.workEmail.email END AS L2managerEmail,
-       CASE WHEN L3manager IS NOT NULL THEN L3manager.employeeNumber END AS L3managerid,
-       CASE WHEN L3manager IS NOT NULL THEN L3manager.name.givenName END AS L3managerFirstName,
-       CASE WHEN L3manager IS NOT NULL THEN L3manager.name.familyName END AS L3managerLastName,
-       CASE WHEN L3manager IS NOT NULL THEN L3manager.workEmail.email END AS L3managerEmail,
-       CASE WHEN L4manager IS NOT NULL THEN L4manager.employeeNumber END AS L4managerid,
-       CASE WHEN L4manager IS NOT NULL THEN L4manager.name.givenName END AS L4managerFirstName,
-       CASE WHEN L4manager IS NOT NULL THEN L4manager.name.familyName END AS L4managerLastName,
-       CASE WHEN L4manager IS NOT NULL THEN L4manager.workEmail.email END AS L4managerEmail
+MATCH (e:User)
+WITH e
+ORDER BY e.employeeNumber
+WITH e, apoc.path.subgraphNodes(e, {relationshipFilter: "REPORTS_TO>"}) AS path
+WITH e, path, size(path) AS level
+UNWIND range(0, level-1) AS i
+WITH e, path, level, i, 
+     CASE WHEN i = 0 THEN e.employeeNumber ELSE (path[i]).employeeNumber END AS L1managerid,
+     CASE WHEN i = 1 THEN (path[i]).employeeNumber ELSE null END AS L2managerid,
+     CASE WHEN i = 2 THEN (path[i]).employeeNumber ELSE null END AS L3managerid,
+     CASE WHEN i = 3 THEN (path[i]).employeeNumber ELSE null END AS L4managerid
+RETURN e.employeeNumber AS employeeNumber,
+       e.managerid AS managerid,
+       level AS Level,
+       L1managerid, L2managerid, L3managerid, L4managerid
+ORDER BY e.employeeNumber
