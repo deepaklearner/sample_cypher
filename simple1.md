@@ -68,13 +68,9 @@ Multiple issue. there are total 7 rows in output. Duplicate employeeNumber. also
 
 v1.4
 
-// Step 1: Set the CEO's Level to 1
-MATCH (ceo:User {employeeNumber: '2000001'})
-SET ceo.Level = 1
-
-// Step 2: Use a recursive query to propagate levels down the hierarchy
-// Step 1: Set the CEO's Level to 1
-MATCH (ceo:User {employeeNumber: '2000001'})
+// Step 1: Identify the CEO (the user who reports to themselves)
+MATCH (ceo:User)
+WHERE ceo.employeeNumber = ceo.managerid
 SET ceo.Level = 1
 
 // Step 2: Recursively calculate levels for the rest of the hierarchy
@@ -105,6 +101,7 @@ SET n.Level = 5
 WITH DISTINCT n
 RETURN n.employeeNumber, n.managerid, n.Level
 ORDER BY n.Level
+
 
 
 
