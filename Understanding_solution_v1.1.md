@@ -4,7 +4,10 @@ MATCH (e:User)
 WHERE e.managerid IS NOT NULL
 
 // multiple rows of json of e and.. managers a list of value fetched from every json
-WITH e, [e.managerid] AS managers
+
+///////////////////////////////////////////////////////////////
+WITH e, [e.managerid] AS managers // think this as outer loop
+///////////////////////////////////////////////////////////////
 
 // WITH operates on a row-by-row basis
 
