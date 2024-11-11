@@ -32,21 +32,38 @@ v1.1:
 
 v1.2: 
 
+    // Set Level for the CEO
+    MATCH (ceo:User {employeeNumber: '2000001'})
+    SET ceo.Level = 1
+
+    // Use WITH to pass the ceo to the next part of the query
+    WITH ceo
+
+    // Now, traverse the hierarchy and calculate Level for others
+    MATCH (n:User)-[:REPORTS_TO*]->(ceo)
+    WITH n, LENGTH(relationshipPath(n, ceo)) AS level
+    SET n.Level = level + 1
+
+    // Return the updated results
+    RETURN n.employeeNumber, n.managerid, n.Level
+    ORDER BY n.Level
+
+v1.3
+
 // Set Level for the CEO
 MATCH (ceo:User {employeeNumber: '2000001'})
 SET ceo.Level = 1
 
-// Use WITH to pass the ceo to the next part of the query
-WITH ceo
-
 // Now, traverse the hierarchy and calculate Level for others
+WITH ceo
 MATCH (n:User)-[:REPORTS_TO*]->(ceo)
-WITH n, LENGTH(relationshipPath(n, ceo)) AS level
+WITH n, LENGTH((n)-[:REPORTS_TO*]->(ceo)) AS level
 SET n.Level = level + 1
 
 // Return the updated results
 RETURN n.employeeNumber, n.managerid, n.Level
 ORDER BY n.Level
+
 
 
 
