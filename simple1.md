@@ -1,23 +1,33 @@
 v1.4
 
-// Step 1: Identify the CEO (user who reports to themselves) and set their level to 1
+// Step 1: Find the CEO (user who reports to themselves) and set their level to 1
 MATCH (ceo:User)
 WHERE ceo.employeeNumber = ceo.managerid
 WITH ceo
 // Return the CEO with level 1
 RETURN ceo.employeeNumber AS employeeNumber, ceo.employeeNumber AS managerid, 1 AS Level
+
 UNION
-// Step 2: Find all direct reports to the CEO and set their level to 2
+
+// Step 2: Find direct reports to the CEO and set their level to 2
 MATCH (n:User)-[:REPORTS_TO]->(ceo:User)
 WHERE ceo.employeeNumber = n.managerid
 RETURN n.employeeNumber AS employeeNumber, ceo.employeeNumber AS managerid, 2 AS Level
+
 UNION
-// Step 3: Recursively find indirect reports and calculate the level dynamically
-MATCH (n:User)-[:REPORTS_TO*]->(ceo:User)
-WHERE n.managerid <> n.employeeNumber  // Avoid users reporting to themselves
-WITH n, ceo, REDUCE(level = 0, r IN NODES((n)-[:REPORTS_TO*]->(ceo)) | level + 1) AS level
-RETURN n.employeeNumber AS employeeNumber, ceo.employeeNumber AS managerid, level
-ORDER BY level
+
+// Step 3: Find direct reports to users at level 2 (i.e., find Level 3 users)
+MATCH (n:User)-[:REPORTS_TO]->(m:User)
+WHERE m.employeeNumber IN [2000001, 2000002]  // This list includes the CEO and their direct reports
+RETURN n.employeeNumber AS employeeNumber, m.employeeNumber AS managerid, 3 AS Level
+
+UNION
+
+// Step 4: Find direct reports to users at level 3 (i.e., find Level 4 users)
+MATCH (n:User)-[:REPORTS_TO]->(m:User)
+WHERE m.employeeNumber IN [2000001, 2000002, 2000003]  // Expand the list to include users at level 1-3
+RETURN n.employeeNumber AS employeeNumber, m.employeeNumber AS managerid, 4 AS Level
+
 
 
 
