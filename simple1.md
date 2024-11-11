@@ -3,24 +3,28 @@ v1.1
 MATCH (n:User)
 WHERE n.managerid IS NOT NULL
 WITH n
-  // Build the path for each employee to their manager(s)
-  OPTIONAL MATCH path = (n)-[:REPORTS_TO*]->(m:User)
-WITH n, path, m
-// Calculate level based on path length
-WITH n, m, length(path) + 1 AS level, path
-// Gather managerids for each level up the chain
-WITH n, m, level, collect( CASE WHEN level = 1 THEN m.employeeNumber END ) AS L1managerid,
-     collect( CASE WHEN level = 2 THEN m.employeeNumber END ) AS L2managerid,
-     collect( CASE WHEN level = 3 THEN m.employeeNumber END ) AS L3managerid,
-     collect( CASE WHEN level = 4 THEN m.employeeNumber END ) AS L4managerid
-RETURN n.employeeNumber AS employeeNumber, 
-       n.managerid AS managerid,
-       level AS Level,
-       head(L1managerid) AS L1managerid,
-       head(L2managerid) AS L2managerid,
-       head(L3managerid) AS L3managerid,
-       head(L4managerid) AS L4managerid
+// Step 1: Get the direct manager of the employee
+OPTIONAL MATCH (n)-[:REPORTS_TO]->(m1:User)
+WITH n, m1
+// Step 2: Get the second-level manager (manager of the manager)
+OPTIONAL MATCH (m1)-[:REPORTS_TO]->(m2:User)
+WITH n, m1, m2
+// Step 3: Get the third-level manager (manager of the second-level manager)
+OPTIONAL MATCH (m2)-[:REPORTS_TO]->(m3:User)
+WITH n, m1, m2, m3
+// Step 4: Get the fourth-level manager (manager of the third-level manager)
+OPTIONAL MATCH (m3)-[:REPORTS_TO]->(m4:User)
+WITH n, m1, m2, m3, m4
+RETURN 
+  n.employeeNumber AS employeeNumber,
+  n.managerid AS managerid,
+  CASE WHEN m1 IS NULL THEN 1 ELSE 2 END AS Level, 
+  m1.employeeNumber AS L1managerid,
+  m2.employeeNumber AS L2managerid,
+  m3.employeeNumber AS L3managerid,
+  m4.employeeNumber AS L4managerid
 ORDER BY n.employeeNumber;
+
 
 
 # Ques
