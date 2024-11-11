@@ -10,7 +10,7 @@ OPTIONAL MATCH (m:User {employeeNumber: e.managerid})
 OPTIONAL MATCH (m)-[:HAS_ATTRIBUTE]->(n:Name)
 WITH e, m, n, 
      CASE 
-         WHEN NOT m.employeeNumber IN [manager.employeeNumber | manager IN managers] 
+         WHEN NOT m.employeeNumber IN [manager.employeeNumber FROM manager IN managers] 
          THEN managers + [{employeeNumber: m.employeeNumber, givenName: n.givenName, familyName: n.familyName}] 
          ELSE managers 
      END AS managers
@@ -20,7 +20,7 @@ OPTIONAL MATCH (m2:User {employeeNumber: m.managerid})
 OPTIONAL MATCH (m2)-[:HAS_ATTRIBUTE]->(n2:Name)
 WITH e, m2, n2, 
      CASE 
-         WHEN NOT m2.employeeNumber IN [manager.employeeNumber | manager IN managers] 
+         WHEN NOT m2.employeeNumber IN [manager.employeeNumber FROM manager IN managers] 
          THEN managers + [{employeeNumber: m2.employeeNumber, givenName: n2.givenName, familyName: n2.familyName}] 
          ELSE managers 
      END AS managers
@@ -30,7 +30,7 @@ OPTIONAL MATCH (m3:User {employeeNumber: m2.managerid})
 OPTIONAL MATCH (m3)-[:HAS_ATTRIBUTE]->(n3:Name)
 WITH e, m3, n3, 
      CASE 
-         WHEN NOT m3.employeeNumber IN [manager.employeeNumber | manager IN managers] 
+         WHEN NOT m3.employeeNumber IN [manager.employeeNumber FROM manager IN managers] 
          THEN managers + [{employeeNumber: m3.employeeNumber, givenName: n3.givenName, familyName: n3.familyName}] 
          ELSE managers 
      END AS managers
@@ -40,7 +40,7 @@ OPTIONAL MATCH (m4:User {employeeNumber: m3.managerid})
 OPTIONAL MATCH (m4)-[:HAS_ATTRIBUTE]->(n4:Name)
 WITH e, m4, n4, 
      CASE 
-         WHEN NOT m4.employeeNumber IN [manager.employeeNumber | manager IN managers] 
+         WHEN NOT m4.employeeNumber IN [manager.employeeNumber FROM manager IN managers] 
          THEN managers + [{employeeNumber: m4.employeeNumber, givenName: n4.givenName, familyName: n4.familyName}] 
          ELSE managers 
      END AS managers
@@ -69,4 +69,5 @@ RETURN e.employeeNumber AS employeeNumber,
        CASE WHEN size(managers) > 3 THEN managers[3].givenName ELSE NULL END AS L4FirstName,
        CASE WHEN size(managers) > 3 THEN managers[3].familyName ELSE NULL END AS L4LastName
 ORDER BY e.employeeNumber
+
 
