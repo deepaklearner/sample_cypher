@@ -27,7 +27,7 @@ WITH user, L1, L2, L3,
        ELSE NULL 
      END AS Level
 
-// Make sure we only have one row per user
+// Ensure that only one row is returned per user
 WITH DISTINCT user.employeeNumber AS employeeNumber, 
              user.managerid AS managerid, 
              Level,
@@ -43,7 +43,7 @@ RETURN
 
     // For CEO, display the managerid as L1managerid; for others, use L1’s employeeNumber
     CASE 
-      WHEN Level = 1 THEN user.managerid 
+      WHEN Level = 1 THEN managerid 
       ELSE L1.employeeNumber 
     END AS L1managerid,
 
