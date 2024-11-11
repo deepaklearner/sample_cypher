@@ -234,3 +234,9 @@ Note:
 | 2000004        | 2000003   | 4     |
 
 Avoid using relationship() function. Dont use "REPORTS_TO*" . Keep the solution very simple and easy to understand.
+
+
+
+---
+
+L1managerid | L1managerFirstName | L1managerLastName | L1managerEmail
