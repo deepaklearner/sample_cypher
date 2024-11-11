@@ -72,16 +72,27 @@ v1.4
 MATCH (ceo:User {employeeNumber: '2000001'})
 SET ceo.Level = 1
 
-// Step 2: Traverse the hierarchy and calculate Level for others
+// Step 2: Iterate over the hierarchy and set levels for others
 WITH ceo
-MATCH (n:User)-[:REPORTS_TO*]->(ceo)  // Find all users reporting to the CEO (directly or indirectly)
-WHERE n <> ceo  // Exclude the CEO from this step, as we already set their level
-WITH n, LENGTH((n)-[:REPORTS_TO*]->(ceo)) AS level  // Calculate the number of hops (levels) to the CEO
-SET n.Level = level + 1  // Set the Level for each user (Level is hops + 1)
+MATCH (n:User)-[:REPORTS_TO]->(m:User)
+WHERE m.employeeNumber = ceo.employeeNumber  // Match the direct reports to CEO
+SET n.Level = 2
 
-// Step 3: Return the updated results
-RETURN n.employeeNumber, n.managerid, n.Level
+// Step 3: Set levels for the rest of the hierarchy iteratively
+WITH ceo
+MATCH (n:User)-[:REPORTS_TO]->(m:User)
+WHERE m.Level = 2
+SET n.Level = 3
+
+WITH ceo
+MATCH (n:User)-[:REPORTS_TO]->(m:User)
+WHERE m.Level = 3
+SET n.Level = 4
+
+// Step 4: Return the final result
+RETURN n.employeeNumber, m.employeeNumber AS managerid, n.Level
 ORDER BY n.Level
+
 
 
 
