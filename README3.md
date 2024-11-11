@@ -4,7 +4,9 @@ OPTIONAL MATCH (user)-[:REPORTS_TO]->(L1:User)
 OPTIONAL MATCH (L1)-[:REPORTS_TO]->(L2:User)
 OPTIONAL MATCH (L2)-[:REPORTS_TO]->(L3:User)
 
-// Get name and email attributes for each level's manager
+// Get name and email attributes for each level's manager and for the user (in case user is CEO)
+OPTIONAL MATCH (user)-[:HAS_ATTRIBUTE]->(user_name:Name)
+OPTIONAL MATCH (user)-[:HAS_ATTRIBUTE]->(user_email:WorkEmail)
 OPTIONAL MATCH (L1)-[:HAS_ATTRIBUTE]->(L1_name:Name)
 OPTIONAL MATCH (L1)-[:HAS_ATTRIBUTE]->(L1_email:WorkEmail)
 OPTIONAL MATCH (L2)-[:HAS_ATTRIBUTE]->(L2_name:Name)
@@ -14,7 +16,7 @@ OPTIONAL MATCH (L3)-[:HAS_ATTRIBUTE]->(L3_email:WorkEmail)
 
 // Calculate Level
 WITH user, L1, L2, L3,
-     L1_name, L1_email, L2_name, L2_email, L3_name, L3_email,
+     user_name, user_email, L1_name, L1_email, L2_name, L2_email, L3_name, L3_email,
      CASE 
        WHEN user.employeeNumber = user.managerid THEN 1
        WHEN L1 IS NOT NULL AND L2 IS NULL THEN 2
@@ -33,12 +35,12 @@ RETURN
       WHEN Level = 1 THEN user.managerid 
       ELSE L1.employeeNumber 
     END AS L1managerid,
-    
-    // Only populate L1 manager details if Level is 2 or higher
-    CASE WHEN Level >= 2 THEN L1_name.givenName ELSE NULL END AS L1managerFirstName,
-    CASE WHEN Level >= 2 THEN L1_name.familyName ELSE NULL END AS L1managerLastName,
-    CASE WHEN Level >= 2 THEN L1_email.WorkEmail ELSE NULL END AS L1managerEmail,
-    
+
+    // For CEO, use their own name and email; for others, use L1 manager’s name and email
+    CASE WHEN Level = 1 THEN user_name.givenName ELSE L1_name.givenName END AS L1managerFirstName,
+    CASE WHEN Level = 1 THEN user_name.familyName ELSE L1_name.familyName END AS L1managerLastName,
+    CASE WHEN Level = 1 THEN user_email.WorkEmail ELSE L1_email.WorkEmail END AS L1managerEmail,
+
     // Only populate L2 manager details if Level is 3 or higher
     CASE WHEN Level >= 3 THEN L2.employeeNumber ELSE NULL END AS L2managerid,
     CASE WHEN Level >= 3 THEN L2_name.givenName ELSE NULL END AS L2managerFirstName,
