@@ -5,26 +5,22 @@ WHERE e.managerid IS NOT NULL
 
 WITH e, 1 AS level, [e.managerid] AS managers
 
-// Recursively collect manager hierarchy up to 4 levels
+// Collect manager hierarchy up to 4 levels, appending each manager to the list
 OPTIONAL MATCH (m:User {employeeNumber: e.managerid})
-WITH e, m, level, managers
-WHERE m IS NOT NULL
 WITH e, m, level + 1 AS level, managers + [m.employeeNumber] AS managers
+WHERE m IS NOT NULL
 
 OPTIONAL MATCH (m2:User {employeeNumber: m.managerid})
-WITH e, m2, level, managers
-WHERE m2 IS NOT NULL
 WITH e, m2, level + 1 AS level, managers + [m2.employeeNumber] AS managers
+WHERE m2 IS NOT NULL
 
 OPTIONAL MATCH (m3:User {employeeNumber: m2.managerid})
-WITH e, m3, level, managers
-WHERE m3 IS NOT NULL
 WITH e, m3, level + 1 AS level, managers + [m3.employeeNumber] AS managers
+WHERE m3 IS NOT NULL
 
 OPTIONAL MATCH (m4:User {employeeNumber: m3.managerid})
-WITH e, m4, level, managers
-WHERE m4 IS NOT NULL
 WITH e, m4, level + 1 AS level, managers + [m4.employeeNumber] AS managers
+WHERE m4 IS NOT NULL
 
 // Output the result
 RETURN e.employeeNumber AS employeeNumber, e.managerid AS managerid,
