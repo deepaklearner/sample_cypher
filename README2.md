@@ -1,5 +1,5 @@
 CALL apoc.periodic.iterate(
-  'MATCH (u:User) WHERE u.employeeNumber IS NOT NULL RETURN u',
+  'MATCH (u:User) WHERE u.employeeNumber IS NOT NULL RETURN u LIMIT 10',  // Limit to 10 users for testing
   '
   // Matching up to 4 levels of reporting structure.
   OPTIONAL MATCH (u)-[:REPORTS_TO]->(m:User)
@@ -35,30 +35,30 @@ CALL apoc.periodic.iterate(
        END AS level,
 
        // Coalescing the manager details at each level, ensuring empty values when no manager exists
-       COALESCE(m.managerid, '') AS L1managerid,
-       COALESCE(mName.FirstName, '') AS L1managerFirstName,
-       COALESCE(mName.LastName, '') AS L1managerLastName,
-       COALESCE(mEmail.WorkEmail, '') AS L1managerEmail,
+       CASE WHEN m IS NOT NULL THEN COALESCE(m.managerid, '') ELSE '' END AS L1managerid,
+       CASE WHEN m IS NOT NULL THEN COALESCE(mName.FirstName, '') ELSE '' END AS L1managerFirstName,
+       CASE WHEN m IS NOT NULL THEN COALESCE(mName.LastName, '') ELSE '' END AS L1managerLastName,
+       CASE WHEN m IS NOT NULL THEN COALESCE(mEmail.WorkEmail, '') ELSE '' END AS L1managerEmail,
 
-       COALESCE(l1.managerid, '') AS L2managerid,
-       COALESCE(l1Name.FirstName, '') AS L2managerFirstName,
-       COALESCE(l1Name.LastName, '') AS L2managerLastName,
-       COALESCE(l1Email.WorkEmail, '') AS L2managerEmail,
+       CASE WHEN l1 IS NOT NULL THEN COALESCE(l1.managerid, '') ELSE '' END AS L2managerid,
+       CASE WHEN l1 IS NOT NULL THEN COALESCE(l1Name.FirstName, '') ELSE '' END AS L2managerFirstName,
+       CASE WHEN l1 IS NOT NULL THEN COALESCE(l1Name.LastName, '') ELSE '' END AS L2managerLastName,
+       CASE WHEN l1 IS NOT NULL THEN COALESCE(l1Email.WorkEmail, '') ELSE '' END AS L2managerEmail,
 
-       COALESCE(l2.managerid, '') AS L3managerid,
-       COALESCE(l2Name.FirstName, '') AS L3managerFirstName,
-       COALESCE(l2Name.LastName, '') AS L3managerLastName,
-       COALESCE(l2Email.WorkEmail, '') AS L3managerEmail,
+       CASE WHEN l2 IS NOT NULL THEN COALESCE(l2.managerid, '') ELSE '' END AS L3managerid,
+       CASE WHEN l2 IS NOT NULL THEN COALESCE(l2Name.FirstName, '') ELSE '' END AS L3managerFirstName,
+       CASE WHEN l2 IS NOT NULL THEN COALESCE(l2Name.LastName, '') ELSE '' END AS L3managerLastName,
+       CASE WHEN l2 IS NOT NULL THEN COALESCE(l2Email.WorkEmail, '') ELSE '' END AS L3managerEmail,
 
-       COALESCE(l3.managerid, '') AS L4managerid,
-       COALESCE(l3Name.FirstName, '') AS L4managerFirstName,
-       COALESCE(l3Name.LastName, '') AS L4managerLastName,
-       COALESCE(l3Email.WorkEmail, '') AS L4managerEmail,
+       CASE WHEN l3 IS NOT NULL THEN COALESCE(l3.managerid, '') ELSE '' END AS L4managerid,
+       CASE WHEN l3 IS NOT NULL THEN COALESCE(l3Name.FirstName, '') ELSE '' END AS L4managerFirstName,
+       CASE WHEN l3 IS NOT NULL THEN COALESCE(l3Name.LastName, '') ELSE '' END AS L4managerLastName,
+       CASE WHEN l3 IS NOT NULL THEN COALESCE(l3Email.WorkEmail, '') ELSE '' END AS L4managerEmail,
 
-       COALESCE(l4.managerid, '') AS L5managerid,
-       COALESCE(l4Name.FirstName, '') AS L5managerFirstName,
-       COALESCE(l4Name.LastName, '') AS L5managerLastName,
-       COALESCE(l4Email.WorkEmail, '') AS L5managerEmail
+       CASE WHEN l4 IS NOT NULL THEN COALESCE(l4.managerid, '') ELSE '' END AS L5managerid,
+       CASE WHEN l4 IS NOT NULL THEN COALESCE(l4Name.FirstName, '') ELSE '' END AS L5managerFirstName,
+       CASE WHEN l4 IS NOT NULL THEN COALESCE(l4Name.LastName, '') ELSE '' END AS L5managerLastName,
+       CASE WHEN l4 IS NOT NULL THEN COALESCE(l4Email.WorkEmail, '') ELSE '' END AS L5managerEmail
 
   // Return the relevant columns, ordered by employee number and level
   RETURN u.employeeNumber, u.managerid, level,
@@ -69,8 +69,9 @@ CALL apoc.periodic.iterate(
          L5managerid, L5managerFirstName, L5managerLastName, L5managerEmail
   ORDER BY u.employeeNumber
   ',
-  {batchSize: 10000, iterateList: true, parallel: true}
+  {batchSize: 10, iterateList: true, parallel: false}
 )
+
 
 
 
