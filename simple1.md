@@ -1,41 +1,46 @@
 v1.1
 
-// Find the CEO (the user who doesn't report to anyone)
-MATCH (ceo:User)
-WHERE NOT (ceo)<-[:REPORTS_TO]-()
-WITH ceo
+MATCH (e:User)
+WHERE e.managerid IS NOT NULL
 
-// Traverse downwards from the CEO to find all employees and their reporting structure
-OPTIONAL MATCH path = (ceo)<-[:REPORTS_TO*]-(n:User)
-WITH n, path
+WITH e, 1 AS level, [e.managerid] AS managers
 
-// Calculate the level of each employee based on the length of the path (CEO is level 1)
-WITH n, length(path) + 1 AS level, path
+// Recursively collect manager hierarchy up to 4 levels
+OPTIONAL MATCH (m:User {employeeNumber: e.managerid})
+WITH e, m, level, managers
+WHERE m IS NOT NULL
+WITH e, m, level + 1 AS level, managers + [m.employeeNumber] AS managers
 
-// Collect manager IDs for each level of the hierarchy
-WITH n, level, 
-     collect( CASE WHEN level = 1 THEN ceo.employeeNumber END ) AS L1managerid,
-     collect( CASE WHEN level = 2 THEN head(nodes(path)).employeeNumber END ) AS L2managerid,
-     collect( CASE WHEN level = 3 THEN head(nodes(tail(path))).employeeNumber END ) AS L3managerid,
-     collect( CASE WHEN level = 4 THEN head(nodes(tail(tail(path)))).employeeNumber END ) AS L4managerid
+OPTIONAL MATCH (m2:User {employeeNumber: m.managerid})
+WITH e, m2, level, managers
+WHERE m2 IS NOT NULL
+WITH e, m2, level + 1 AS level, managers + [m2.employeeNumber] AS managers
 
-// Return the employee information, their manager IDs, and the level
-RETURN 
-    n.employeeNumber AS employeeNumber, 
-    n.managerid AS managerid,
-    level AS Level,
-    head(L1managerid) AS L1managerid,
-    head(L2managerid) AS L2managerid,
-    head(L3managerid) AS L3managerid,
-    head(L4managerid) AS L4managerid
-ORDER BY n.employeeNumber;
+OPTIONAL MATCH (m3:User {employeeNumber: m2.managerid})
+WITH e, m3, level, managers
+WHERE m3 IS NOT NULL
+WITH e, m3, level + 1 AS level, managers + [m3.employeeNumber] AS managers
+
+OPTIONAL MATCH (m4:User {employeeNumber: m3.managerid})
+WITH e, m4, level, managers
+WHERE m4 IS NOT NULL
+WITH e, m4, level + 1 AS level, managers + [m4.employeeNumber] AS managers
+
+// Output the result
+RETURN e.employeeNumber AS employeeNumber, e.managerid AS managerid,
+       level AS Level,
+       CASE WHEN size(managers) > 0 THEN managers[0] ELSE NULL END AS L1managerid,
+       CASE WHEN size(managers) > 1 THEN managers[1] ELSE NULL END AS L2managerid,
+       CASE WHEN size(managers) > 2 THEN managers[2] ELSE NULL END AS L3managerid,
+       CASE WHEN size(managers) > 3 THEN managers[3] ELSE NULL END AS L4managerid
+ORDER BY e.employeeNumber
 
 
 
 
 # Ques
 
-In Neo4j, I am using below cypher """
+In Neo4j, I am using below cypher to create graph: """
     CALL apoc.periodic.iterate(
       "
         MATCH (n:User)
@@ -53,18 +58,9 @@ In Neo4j, I am using below cypher """
       {batchSize: 10000, parallel: false}
     )"""
 
-I want to create a report for below data. employeeNumber matching with managerid is ceo. It should have Level value 1.
+Write a very simple cypher, which is easy to debug and easiy to understand for beginners to create a report. employeeNumber matching with managerid is ceo. It should have Level value 1.
 
-Sample data:
-"""(User: {employeeNumber: ‘2000004’}) -[:REPORTS_TO]->(User: {employeeNumber: ‘2000003’}) -[:REPORTS_TO]->(User: {employeeNumber: ‘2000002’}) -[:REPORTS_TO]->(User: {employeeNumber: ‘2000001’})"""
-
-Note: 
-1. Dont hardcode ceo logic.
-2. Dont use set statement.
-3. Keep the solution very simple.
-4. Avoid using relationship() function. Dont use "REPORTS_TO*" . Keep the solution very simple and easy to understand.
-
-Sample report:
+Sample report format:
 """
 | employeeNumber | managerid | Level | L1managerid | L2managerid | L3managerid | L4managerid |
 |----------------|-----------|-------|-------------|-------------|-------------|-------------|
@@ -73,6 +69,14 @@ Sample report:
 | 2000003        | 2000002   | 3     | 2000002     | 2000001     |             |             |
 | 2000004        | 2000003   | 4     | 2000003     | 2000002     | 2000001     |             |
 """
+Sample data:
+"""(User: {employeeNumber: ‘2000004’}) -[:REPORTS_TO]->(User: {employeeNumber: ‘2000003’}) -[:REPORTS_TO]->(User: {employeeNumber: ‘2000002’}) -[:REPORTS_TO]->(User: {employeeNumber: ‘2000001’})"""
+
+Note: 
+1. Dont hardcode ceo logic.
+2. Dont use set statement.
+3. Keep the solution very simple.
+4. Avoid using relationship() function. Dont use "REPORTS_TO*" . Keep the solution very simple and easy to understand.
 
 
 ---
