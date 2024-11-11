@@ -68,23 +68,25 @@ Multiple issue. there are total 7 rows in output. Duplicate employeeNumber. also
 
 v1.4
 
-// Step 1: Identify the CEO (user who reports to themselves)
+// Step 1: Identify the CEO (user who reports to themselves) and set their level to 1
 MATCH (ceo:User)
 WHERE ceo.employeeNumber = ceo.managerid
-
-// Step 2: Find all direct reports to the CEO (Level 2)
-MATCH (n:User)-[:REPORTS_TO]->(ceo)
-RETURN ceo.employeeNumber AS employeeNumber, ceo.employeeNumber AS managerid, 1 AS Level
+WITH ceo
+// Step 2: Return the CEO with level 1
+RETURN ceo.employeeNumber AS employeeNumber, ceo.managerid AS managerid, 1 AS Level
 UNION
-// Step 3: Find all direct reports to Level 2 users and calculate Level 3, and so on
-MATCH (n:User)-[:REPORTS_TO]->(m:User)
-WHERE m.employeeNumber <> m.managerid // Avoid cyclic relations (in case a user reports to themselves)
-WITH n, m, 2 AS Level
-MATCH (m2:User)-[:REPORTS_TO]->(m)
-RETURN n.employeeNumber AS employeeNumber, m.employeeNumber AS managerid, Level
-ORDER BY Level
+// Step 3: Find all direct reports to the CEO and set their level to 2
+MATCH (n:User)-[:REPORTS_TO]->(ceo:User)
+WHERE ceo.employeeNumber = n.managerid
+RETURN n.employeeNumber AS employeeNumber, ceo.employeeNumber AS managerid, 2 AS Level
+UNION
+// Step 4: Find all indirect reports to the CEO and propagate the level dynamically
+MATCH (n:User)-[:REPORTS_TO*]->(ceo:User)
+WHERE n.managerid <> n.employeeNumber  // Avoid users reporting to themselves
+WITH n, ceo, LENGTH((n)-[:REPORTS_TO*]->(ceo)) + 1 AS level
+RETURN n.employeeNumber AS employeeNumber, ceo.employeeNumber AS managerid, level
+ORDER BY level
 
-deepak
 
 
 
