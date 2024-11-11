@@ -1,16 +1,20 @@
-MATCH (e:User)
-OPTIONAL MATCH path = (e)-[:REPORTS_TO*]->(m:User)
-WITH e, LENGTH(path) AS level, COLLECT(m.employeeNumber) AS managers
-WITH e, 
-     CASE WHEN e.employeeNumber IN managers THEN 1 ELSE level + 1 END AS finalLevel,  // Level 1 if employee is CEO
-     managers
-WITH e, finalLevel,
-     CASE WHEN SIZE(managers) > 0 THEN managers[0] ELSE e.employeeNumber END AS L1managerid,
-     CASE WHEN SIZE(managers) > 1 THEN managers[1] ELSE NULL END AS L2managerid,
-     CASE WHEN SIZE(managers) > 2 THEN managers[2] ELSE NULL END AS L3managerid,
-     CASE WHEN SIZE(managers) > 3 THEN managers[3] ELSE NULL END AS L4managerid
-RETURN e.employeeNumber AS employeeNumber,
-       e.managerid AS managerid,
-       finalLevel AS Level,
-       L1managerid, L2managerid, L3managerid, L4managerid
-ORDER BY e.employeeNumber
+MATCH (ceo:User {employeeNumber: '2000001'})
+CALL {
+    WITH ceo
+    MATCH (n:User)-[:REPORTS_TO*0..]->(m:User)
+    WHERE n <> m  // Exclude self-references
+    RETURN n, m, length(relationships((n)-[:REPORTS_TO*]->(m))) AS level
+}
+WITH n, m, level,
+     COLLECT(CASE WHEN level = 1 THEN m.employeeNumber ELSE NULL END) AS L1,
+     COLLECT(CASE WHEN level = 2 THEN m.employeeNumber ELSE NULL END) AS L2,
+     COLLECT(CASE WHEN level = 3 THEN m.employeeNumber ELSE NULL END) AS L3,
+     COLLECT(CASE WHEN level = 4 THEN m.employeeNumber ELSE NULL END) AS L4
+RETURN n.employeeNumber AS employeeNumber, 
+       n.managerid AS managerid, 
+       level AS Level,
+       HEAD(L1) AS L1managerid, 
+       HEAD(L2) AS L2managerid, 
+       HEAD(L3) AS L3managerid, 
+       HEAD(L4) AS L4managerid
+ORDER BY employeeNumber
