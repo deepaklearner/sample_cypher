@@ -26,23 +26,23 @@ Sample report with sample data:
 | 2000004        | 2000003   | 4     | 2000003     | 2000002     | 2000001     |             |
 
 
-MATCH (employee:User)
-OPTIONAL MATCH (employee)-[:REPORTS_TO]->(L1:User)
-OPTIONAL MATCH (L1)-[:REPORTS_TO]->(L2:User)
-OPTIONAL MATCH (L2)-[:REPORTS_TO]->(L3:User)
-OPTIONAL MATCH (L3)-[:REPORTS_TO]->(L4:User)
-RETURN 
-  employee.employeeNumber AS employeeNumber,
-  employee.managerid AS managerid,
-  CASE
-    WHEN L4 IS NOT NULL THEN 4
-    WHEN L3 IS NOT NULL THEN 3
-    WHEN L2 IS NOT NULL THEN 2
-    WHEN L1 IS NOT NULL THEN 1
-    ELSE 0
-  END AS Level,
-  L1.employeeNumber AS L1managerid,
-  L2.employeeNumber AS L2managerid,
-  L3.employeeNumber AS L3managerid,
-  L4.employeeNumber AS L4managerid
-ORDER BY employee.employeeNumber
+        MATCH (employee:User)
+        OPTIONAL MATCH (employee)-[:REPORTS_TO]->(L1:User)
+        OPTIONAL MATCH (L1)-[:REPORTS_TO]->(L2:User)
+        OPTIONAL MATCH (L2)-[:REPORTS_TO]->(L3:User)
+        OPTIONAL MATCH (L3)-[:REPORTS_TO]->(L4:User)
+        RETURN 
+        employee.employeeNumber AS employeeNumber,
+        employee.managerid AS managerid,
+        CASE
+            WHEN L4 IS NOT NULL THEN 4
+            WHEN L3 IS NOT NULL THEN 3
+            WHEN L2 IS NOT NULL THEN 2
+            WHEN L1 IS NOT NULL THEN 1
+            ELSE 0
+        END AS Level,
+        L1.employeeNumber AS L1managerid,
+        L2.employeeNumber AS L2managerid,
+        L3.employeeNumber AS L3managerid,
+        L4.employeeNumber AS L4managerid
+        ORDER BY employee.employeeNumber
