@@ -11,28 +11,28 @@ WITH e, [{employeeNumber: e.managerid}] AS managers
 // Collect manager hierarchy up to 4 levels, ensuring no duplicates
 OPTIONAL MATCH (m:User {employeeNumber: e.managerid})-[:HAS_ATTRIBUTE]->(n:Name)
 WITH e, m, n, 
-     CASE WHEN NOT m.employeeNumber IN [manager.employeeNumber | manager IN managers] 
+     CASE WHEN NOT apoc.coll.contains([manager.employeeNumber | manager IN managers], m.employeeNumber) 
           THEN managers + [{employeeNumber: m.employeeNumber, FirstName: n.givenName, LastName: n.familyName}] 
           ELSE managers END AS managers
 WHERE m IS NOT NULL
 
 OPTIONAL MATCH (m2:User {employeeNumber: m.managerid})-[:HAS_ATTRIBUTE]->(n2:Name)
 WITH e, m2, n2, 
-     CASE WHEN NOT m2.employeeNumber IN [manager.employeeNumber | manager IN managers] 
+     CASE WHEN NOT apoc.coll.contains([manager.employeeNumber | manager IN managers], m2.employeeNumber) 
           THEN managers + [{employeeNumber: m2.employeeNumber, FirstName: n2.givenName, LastName: n2.familyName}] 
           ELSE managers END AS managers
 WHERE m2 IS NOT NULL
 
 OPTIONAL MATCH (m3:User {employeeNumber: m2.managerid})-[:HAS_ATTRIBUTE]->(n3:Name)
 WITH e, m3, n3, 
-     CASE WHEN NOT m3.employeeNumber IN [manager.employeeNumber | manager IN managers] 
+     CASE WHEN NOT apoc.coll.contains([manager.employeeNumber | manager IN managers], m3.employeeNumber) 
           THEN managers + [{employeeNumber: m3.employeeNumber, FirstName: n3.givenName, LastName: n3.familyName}] 
           ELSE managers END AS managers
 WHERE m3 IS NOT NULL
 
 OPTIONAL MATCH (m4:User {employeeNumber: m3.managerid})-[:HAS_ATTRIBUTE]->(n4:Name)
 WITH e, m4, n4, 
-     CASE WHEN NOT m4.employeeNumber IN [manager.employeeNumber | manager IN managers] 
+     CASE WHEN NOT apoc.coll.contains([manager.employeeNumber | manager IN managers], m4.employeeNumber) 
           THEN managers + [{employeeNumber: m4.employeeNumber, FirstName: n4.givenName, LastName: n4.familyName}] 
           ELSE managers END AS managers
 WHERE m4 IS NOT NULL
