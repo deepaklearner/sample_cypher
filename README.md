@@ -5,4 +5,5 @@ v1.11 Adding a check if managerid id numeric or alphanumeric
 v1.2 Start from ceo (not working)
 v2 Adding name
 v3 Handle aid
-v4 Using REPORTS_TO
+v4.1 Using REPORTS_TO
+v4.2 Adding name to v4.1
