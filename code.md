@@ -2,13 +2,10 @@
 Here’s a cleaned-up version of the code with some corrections:
 
 ```python
-import pandas as pd
-import logging
-import warnings
 
-def data_manipulation(AetnaIdentifier, data_mapping: dict, df: pd.DataFrame):
+def data_manipulation_AetnaIdentifier (data_mapping: dict, df: pd.DataFrame):
     # Extract assignment rules from the mapping dictionary
-    Lassignment_rules = data_mapping['aid_assignment_rule']
+    aid_assignment_rules = data_mapping['aid_assignment_rule']
 
     # Filter rows where 'employmentStatus' is 'A'
     df = df[df['employmentStatus'] == 'A']
@@ -17,11 +14,11 @@ def data_manipulation(AetnaIdentifier, data_mapping: dict, df: pd.DataFrame):
     warnings.simplefilter(action='ignore')
 
     # Clean the 'organizationId' column by splitting at '• ' and keeping the first part
-    df['organizationId'] = df['organizationId'].str.split('• ').str[0]
+    df['organizationId'] = df['organizationId'].str.split('.').str[0]
 
     combined_filter = None
     # Iterate over the assignment rules
-    for rule in Lassignment_rules:
+    for rule in aid_assignment_rules:
         filtered_val = None
         for key, val in rule.items():
             # Convert column values to uppercase
@@ -44,15 +41,7 @@ def data_manipulation(AetnaIdentifier, data_mapping: dict, df: pd.DataFrame):
     # Convert all columns to string type
     df = df.astype(str)
 
-    # Log the resulting DataFrame
-    logging.info("deepak-2 df")
     logging.info(df)
 
     return df
 ```
-### Key Changes:
-1. Removed extraneous spaces in column names (e.g., `'employmentStatus '`).
-2. Fixed the typo with the incorrect variable name (`combined_filter` vs `combined_ filter`).
-3. Ensured `df[key]` is properly converted to uppercase before checking the `isin()` condition.
-
-This function is designed to filter a DataFrame based on a set of rules, clean certain columns, and return a modified version of the DataFrame.
