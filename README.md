@@ -1,10 +1,7 @@
-v0 Ques and Data source cypher
-v1  
-v1.10 Working
-v1.11 Adding a check if managerid id numeric or alphanumeric
-v1.2 Start from ceo (not working)
-v2 Adding name
-v3 Handle aid
-v4.1 Using REPORTS_TO
-v4.2 Adding name to v4.1
-v5 Report code
+v0 
+
+Write a simple easy to understand cypher query for below requirement.
+User node is connected to UserAccount nodes with relationship "HAS_ATTRIBUTE".
+
+I need to find all the UserAccount nodes and check if we have label "UNASSIGNED" or "ASSIGNED".
+If its not there, then add label "ASSIGNED" to the UserAccount node.
