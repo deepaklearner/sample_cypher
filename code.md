@@ -50,3 +50,9 @@ def data_manipulation(AetnaIdentifier, data_mapping: dict, df: pd.DataFrame):
 
     return df
 ```
+### Key Changes:
+1. Removed extraneous spaces in column names (e.g., `'employmentStatus '`).
+2. Fixed the typo with the incorrect variable name (`combined_filter` vs `combined_ filter`).
+3. Ensured `df[key]` is properly converted to uppercase before checking the `isin()` condition.
+
+This function is designed to filter a DataFrame based on a set of rules, clean certain columns, and return a modified version of the DataFrame.
