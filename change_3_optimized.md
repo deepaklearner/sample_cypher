@@ -90,16 +90,25 @@ def data_manipulation_AetnaIdentifier(data_mapping: dict, df: pd.DataFrame):
     # Initialize exclusion filter as False for all rows in df_headq
     exclusion_filter = pd.Series([False] * len(df_headq), index=df_headq.index)
 
+    # Combine exclusion_filter for each exclusion rule
+    combined_exclusion_filter = None
+    
     # Apply exclusion rules to df_headq
     for exclusion_rule in exclusion_rules:
         for key, val in exclusion_rule.items():
             # Convert column values to uppercase for comparison
             df_headq[key] = df_headq[key].str.upper()
             # Update exclusion filter for rows matching the exclusion rule (using &= for AND)
-            exclusion_filter &= df_headq[key].isin(val)
+            exclusion_filter = df_headq[key].isin(val)
 
-    # Collect the rows to exclude that match the exclusion rule (using exclusion_filter)
-    rows_to_exclude = df_headq[exclusion_filter]
+            # Combine exclusion_filter for each exclusion rule
+            if combined_exclusion_filter is None:
+                combined_exclusion_filter = exclusion_filter
+            else:
+                combined_exclusion_filter |= exclusion_filter
+
+    # Collect the rows to exclude that match the exclusion rule (using combined_exclusion_filter)
+    rows_to_exclude = df_headq[combined_exclusion_filter]
 
     # Remove the excluded rows from the original df based on their indices
     df = df[~df.index.isin(rows_to_exclude.index)]
