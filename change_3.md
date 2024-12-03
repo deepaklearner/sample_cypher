@@ -1,0 +1,117 @@
+Add a not check here "filtered_val = df[key].isin(val)" for exclusion_rule if added in yaml, then only assign cid. How to do that with minimal code change.
+
+"""
+sample yaml:
+aid_assignment_rule:
+    -  division:
+        - HEADQ
+        jobcode:
+        - '310105'
+exclusion_rule:
+    -  division:
+        - HEADQ
+       organizationId:
+        - '4022'
+"""
+
+"""
+def data_manipulation_AetnaIdentifier (data_mapping: dict, df: pd.DataFrame):
+    # Extract assignment rules from the mapping dictionary
+    aid_assignment_rules = data_mapping['aid_assignment_rule']
+
+    # Filter rows where 'employmentStatus' is 'A'
+    df = df[df['employmentStatus'] == 'A']
+
+    # Ignore warnings
+    warnings.simplefilter(action='ignore')
+
+    # Clean the 'organizationId' column by splitting at '• ' and keeping the first part
+    df['organizationId'] = df['organizationId'].str.split('.').str[0]
+
+    combined_filter = None
+    # Iterate over the assignment rules
+    for rule in aid_assignment_rules:
+        filtered_val = None
+        for key, val in rule.items():
+            # Convert column values to uppercase
+            df[key] = df[key].str.upper()
+            # Check if values are in 'val' list
+            if filtered_val is None:
+                filtered_val = df[key].isin(val)
+            else:
+                filtered_val &= df[key].isin(val)
+
+        # Combine filters for each rule
+        if combined_filter is None:
+            combined_filter = filtered_val
+        else:
+            combined_filter |= filtered_val
+
+    # Apply the combined filter
+    df = df[combined_filter]
+
+    # Convert all columns to string type
+    df = df.astype(str)
+
+    logging.info(df)
+
+    return df"""
+
+Solution 1:
+
+def data_manipulation_AetnaIdentifier (data_mapping: dict, df: pd.DataFrame):
+    # Extract assignment rules from the mapping dictionary
+    aid_assignment_rules = data_mapping['aid_assignment_rule']
+    exclusion_rules = data_mapping.get('exclusion_rule', [])
+
+    # Filter rows where 'employmentStatus' is 'A'
+    df = df[df['employmentStatus'] == 'A']
+
+    # Ignore warnings
+    warnings.simplefilter(action='ignore')
+
+    # Clean the 'organizationId' column by splitting at '• ' and keeping the first part
+    df['organizationId'] = df['organizationId'].str.split('.').str[0]
+
+    # Apply exclusion rules
+    for exclusion_rule in exclusion_rules:
+        exclusion_filter = None
+        for key, val in exclusion_rule.items():
+            # Convert column values to uppercase
+            df[key] = df[key].str.upper()
+            # Exclude rows where the column matches the exclusion values
+            if exclusion_filter is None:
+                exclusion_filter = df[key].isin(val)
+            else:
+                exclusion_filter &= df[key].isin(val)
+        # Exclude the rows that match the exclusion rule
+        df = df[~exclusion_filter]
+
+    combined_filter = None
+    # Iterate over the assignment rules
+    for rule in aid_assignment_rules:
+        filtered_val = None
+        for key, val in rule.items():
+            # Convert column values to uppercase
+            df[key] = df[key].str.upper()
+            # Check if values are in 'val' list
+            if filtered_val is None:
+                filtered_val = df[key].isin(val)
+            else:
+                filtered_val &= df[key].isin(val)
+
+        # Combine filters for each rule
+        if combined_filter is None:
+            combined_filter = filtered_val
+        else:
+            combined_filter |= filtered_val
+
+    # Apply the combined filter
+    df = df[combined_filter]
+
+    # Convert all columns to string type
+    df = df.astype(str)
+
+    logging.info(df)
+
+    return df
