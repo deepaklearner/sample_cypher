@@ -2,16 +2,17 @@ Add a not check here "filtered_val = df[key].isin(val)" for exclusion_rule if ad
 
 """
 sample yaml:
-aid_assignment_rule:
-    -  division:
-        - HEADQ
-        jobcode:
-        - '310105'
-exclusion_rule:
-    -  division:
-        - HEADQ
-       organizationId:
-        - '4022'
+CVSIdentifier:
+    aid_assignment_rule:
+        -  division:
+            - HEADQ
+            jobcode:
+            - '310105'
+    exclusion_rule:
+        -  division:
+            - HEADQ
+        organizationId:
+            - '4022'
 """
 
 """
@@ -115,3 +116,26 @@ def data_manipulation_AetnaIdentifier (data_mapping: dict, df: pd.DataFrame):
     logging.info(df)
 
     return df
+
+Solution 2:
+Assume we are processing for CVSIdentifier. Read the AetnaIdentifier values from yaml and 
+Add a not check in CVSIdenfier "filtered_val = df[key].isin(val)" for exclusion_rule if added in yaml, then only assign cid. How to do that with minimal code change.
+
+I want to exclude the values for AetnaIdentifier aid_assignment_rule in CVSIdentifier
+
+sample yaml:
+"""
+CVSIdentifier:
+    aid_assignment_rule:
+        -  division:
+            - HEADQ
+            jobcode:
+            - '310105'
+
+AetnaIdentifier:
+    aid_assignment_rule:
+        -  division:
+            - HEADQ
+            jobcode:
+            - '310101'
+"""
