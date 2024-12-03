@@ -117,6 +117,11 @@ def data_manipulation_AetnaIdentifier (data_mapping: dict, df: pd.DataFrame):
 
     return df
 
+
+Optimized solution 1 further:
+
+filter from df the values for division having "HEADQ" and pass only them to exclusion "for" loop.
+
 Solution 2:
 Assume we are processing for CVSIdentifier. Read the AetnaIdentifier values from yaml and 
 Add a not check in CVSIdenfier "filtered_val = df[key].isin(val)" for exclusion_rule if added in yaml, then only assign cid. How to do that with minimal code change.
