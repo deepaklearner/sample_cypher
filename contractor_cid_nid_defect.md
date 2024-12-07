@@ -142,17 +142,11 @@ def data_manipulation_AetnaIdentifier(data_mapping: dict, df: pd.DataFrame):
             # Apply logic for CONTRACTOR if userType is 'CONTRACTOR'
             network_access_condition = (df['networkAccess'] != 'DNE')
             if network_access_condition.any():
-                # If networkAccess is not "DNE", set filtered_val based on networkAccess
-                df['filtered_val'] = df['networkAccess']
+                # If networkAccess is not "DNE", set filtered_val to True (valid for these records)
                 filtered_val = contractor_filter & network_access_condition
             else:
-                # If networkAccess is "DNE", set filtered_val based on division
-                df['filtered_val'] = df['division']
+                # If networkAccess is "DNE", set filtered_val to True based on division
                 filtered_val = contractor_filter & (df['networkAccess'] == 'DNE')
-        # If userType is not 'CONTRACTOR', the normal rule applies
-        else:
-            # Default logic for non-CONTRACTOR
-            df['filtered_val'] = df[key]  # Default assignment if not contractor
         
         # Combine filters for each rule
         if combined_filter is None:
