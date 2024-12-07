@@ -2,7 +2,7 @@ I have a csv file. I converted it to pandas dataframe. Then I am validating the 
 
 For CVSIdentifier, if userType column value in dataframe is "CONTRACTOR". Then check if networkAccess value is not "DNE", then set filtered_val based on networkAccess for that row. If networkAccess is "DNE" then set filtered_val based on division for that row.
 
-Modify the existing function only and accomodate the logic in existing for loop.
+Modify the existing function only and accomodate the logic in existing for loop. and i dont want to run the logic for contractor records twice.
 
 """
 sample yaml:
@@ -125,31 +125,35 @@ def data_manipulation_AetnaIdentifier(data_mapping: dict, df: pd.DataFrame):
     # Iterate over the assignment rules for CVSIdentifier
     for i in aid_assignment_rules:
         filtered_val = None
+        contractor_filter = (df['userType'] == 'CONTRACTOR')  # Pre-calculate contractor filter
+
         for key, val in i.items():
             # Convert column values to uppercase
             df[key] = df[key].str.upper()
+            
             # Check if values are in 'val' list
             if filtered_val is None:
                 filtered_val = df[key].isin(val)
             else:
                 filtered_val &= df[key].isin(val)
 
-        # Apply additional logic for CONTRACTOR userType
-        if 'userType' in df.columns:
-            contractor_filter = (df['userType'] == 'CONTRACTOR')
-
-            if contractor_filter.any():
-                # Apply logic for CONTRACTOR
-                network_access_condition = (df['networkAccess'] != 'DNE')
-                if network_access_condition.any():
-                    # If networkAccess is not "DNE", set filtered_val based on networkAccess
-                    df['filtered_val'] = df['networkAccess']
-                    filtered_val = contractor_filter & network_access_condition
-                else:
-                    # If networkAccess is "DNE", set filtered_val based on division
-                    df['filtered_val'] = df['division']
-                    filtered_val = contractor_filter & (df['networkAccess'] == 'DNE')
-
+        # Handle the contractor-specific logic inside the loop to avoid repeating
+        if contractor_filter.any():
+            # Apply logic for CONTRACTOR if userType is 'CONTRACTOR'
+            network_access_condition = (df['networkAccess'] != 'DNE')
+            if network_access_condition.any():
+                # If networkAccess is not "DNE", set filtered_val based on networkAccess
+                df['filtered_val'] = df['networkAccess']
+                filtered_val = contractor_filter & network_access_condition
+            else:
+                # If networkAccess is "DNE", set filtered_val based on division
+                df['filtered_val'] = df['division']
+                filtered_val = contractor_filter & (df['networkAccess'] == 'DNE')
+        # If userType is not 'CONTRACTOR', the normal rule applies
+        else:
+            # Default logic for non-CONTRACTOR
+            df['filtered_val'] = df[key]  # Default assignment if not contractor
+        
         # Combine filters for each rule
         if combined_filter is None:
             combined_filter = filtered_val
@@ -189,3 +193,4 @@ def data_manipulation_AetnaIdentifier(data_mapping: dict, df: pd.DataFrame):
     logging.info(df)
 
     return df
+
