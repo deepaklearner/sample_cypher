@@ -8,11 +8,10 @@ CVSIdentifier:
             - HEADQ
             jobcode:
             - '310105'
-    exclusion_rule:
-        -  division:
+        - networkAccess:
             - HEADQ
-        organizationId:
-            - '4022'
+            userType:
+            - CONTRACTOR
 
 AetnaIdentifier:
     aid_assignment_rule:
@@ -20,11 +19,6 @@ AetnaIdentifier:
             - HEADQ
             jobcode:
             - '310105'
-    exclusion_rule:
-        -  division:
-            - CMARK
-        organizationId:
-            - '402'
 """
 
 """
