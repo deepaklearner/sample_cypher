@@ -2,6 +2,7 @@ Q1. suppose i have a pandas dataframe having 5 records. I want to check the valu
 Q2. What is apply?
 Q3. i want to add a check if in column age value is > 30 then add 100 to it
 Q4 can we use apply without calling a function?
+Q5. sample data
 
 Q1. suppose i have a pandas dataframe having 5 records. I want to check the value in a column and run a validation for it. how to do that using python 
 
@@ -424,3 +425,53 @@ print(df)
 - **`apply()` with lambda**: While `apply()` with a lambda function is flexible, it can be slower compared to **vectorized operations** (like using `np.where()` or direct column operations) because `apply()` operates element by element, whereas vectorized operations work on entire columns or arrays in one go.
 
 In general, for performance reasons, if your transformation can be done using vectorized operations, it's better to use those instead of `apply()` with a lambda.
+
+Q5. Sample data
+
+# Online Python compiler (interpreter) to run Python online.
+# Write Python 3 code in this online editor and run it.
+print("Try programiz.pro")
+import pandas as pd
+
+# Sample DataFrame with 4 columns
+data = {
+    'employeeNumber': [100, 101, 102, 103, 104 ],
+    'division': ['HEADQ', 'HEADQ', 'HEADQ', 'HEADQ', 'HEADQ'],
+    'networkAccess': ['HEADQ', 'HEADQ', 'HEADQ', 'HEADQ', 'HEADQ'],
+    'userType': ['EMPLOYEE', 'EMPLOYEE', 'EMPLOYEE', 'CONTRACTOR', 'CONTRACTOR']
+}
+df = pd.DataFrame(data)
+
+# Validation Functions
+def validate_age(value):
+    """Check if age is a valid positive integer."""
+    return isinstance(value, int) and value > 0
+
+def validate_name(value):
+    """Check if name is a non-empty string."""
+    return isinstance(value, str) and len(value.strip()) > 0
+
+def validate_score(value):
+    """Check if score is a valid float."""
+    try:
+        return isinstance(value, (int, float)) and value >= 0
+    except:
+        return False
+
+def validate_status(value):
+    """Check if status is either 'active' or 'inactive'."""
+    return value in ['active', 'inactive']
+
+# Apply validations to each column
+# df['valid_age'] = df['age'].apply(validate_age)
+# df['valid_name'] = df['name'].apply(validate_name)
+# df['valid_score'] = df['score'].apply(validate_score)
+# df['valid_status'] = df['status'].apply(validate_status)
+
+# Print the DataFrame with validation results
+# print(df['age'].apply(lambda x: x + 100 if x > 30 else x))
+
+# df['age'] = df['age'].apply(lambda x: x + 100 if x > 30 else x)
+
+# Print the modified DataFrame
+print(df)
