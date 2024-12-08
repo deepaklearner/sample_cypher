@@ -1,6 +1,7 @@
 Q1. suppose i have a pandas dataframe having 5 records. I want to check the value in a column and run a validation for it. how to do that using python 
 Q2. What is apply?
 Q3. i want to add a check if in column age value is > 30 then add 100 to it
+Q4 can we use apply without calling a function?
 
 Q1. suppose i have a pandas dataframe having 5 records. I want to check the value in a column and run a validation for it. how to do that using python 
 
@@ -325,3 +326,101 @@ print(df)
 - **`apply()`**: You can use `apply()` with a custom function or lambda to modify values conditionally.
 - **Vectorized operations**: Using `np.where()` is a more efficient and faster way to apply conditions across entire columns without the need for a loop.s
 
+
+Q4 can we use apply without calling a function?
+
+Yes, you can use `apply()` without explicitly defining a function by using a **lambda function**. Lambda functions allow you to define small, anonymous functions inline without needing to create a separate named function. This is a very common practice when you need to perform simple operations on each element of a Series or DataFrame.
+
+Here's an example of using `apply()` without calling a function explicitly, but instead using a **lambda function** directly.
+
+### Example: Using `apply()` with a Lambda Function
+
+Let's say you want to modify the `'age'` column by adding 100 to the value if it is greater than 30, and leave it unchanged otherwise. You can do this without defining a separate function by passing a lambda function directly to `apply()`.
+
+### Code:
+
+```python
+import pandas as pd
+
+# Sample DataFrame
+data = {
+    'age': [25, 30, 35, 40, 28],
+    'name': ['Alice', 'Bob', 'Charlie', 'David', 'Eve']
+}
+df = pd.DataFrame(data)
+
+# Apply lambda function directly to 'age' column
+df['age'] = df['age'].apply(lambda x: x + 100 if x > 30 else x)
+
+# Print the modified DataFrame
+print(df)
+```
+
+### Output:
+
+```plaintext
+   age     name
+0   25    Alice
+1   30      Bob
+2  135  Charlie
+3  140    David
+4   28      Eve
+```
+
+### Explanation:
+- **Lambda function**: `lambda x: x + 100 if x > 30 else x`
+  - This is a small anonymous function that takes `x` (the value from the `'age'` column) and applies the logic:
+    - If `x > 30`, it adds 100 to `x`.
+    - Otherwise, it leaves `x` unchanged.
+- The lambda function is passed directly to `apply()`, which applies it to each element in the `'age'` column.
+
+### More Examples:
+
+#### Example 1: Modify a string column using `apply()` and a lambda function
+
+Suppose you have a `'name'` column and want to convert each name to uppercase:
+
+```python
+df['name'] = df['name'].apply(lambda x: x.upper())
+print(df)
+```
+
+#### Output:
+
+```plaintext
+   age     name
+0   25    ALICE
+1   30      BOB
+2  135  CHARLIE
+3  140    DAVID
+4   28      EVE
+```
+
+#### Example 2: Apply a condition to modify multiple columns
+
+Let's say you have two columns: `'age'` and `'score'`, and you want to add 10 to `'score'` if the `'age'` is greater than 30. You can use `apply()` with a lambda function, referencing both columns.
+
+```python
+df['score'] = df.apply(lambda row: row['score'] + 10 if row['age'] > 30 else row['score'], axis=1)
+print(df)
+```
+
+### Output (assuming a `'score'` column was initially present):
+
+```plaintext
+   age     name  score
+0   25    Alice   85.5
+1   30      Bob   92.3
+2  135  Charlie   78.9
+3  140    David   88.4
+4   28      Eve   91.2
+```
+
+### When to Use `apply()` with a Lambda Function:
+- **Quick transformations**: When you need to apply a simple function to each element of a column (or row) without needing a separate function definition.
+- **Readability**: Using a lambda function inline makes the code shorter and more readable when the operation is simple and doesn't need a separate function.
+
+### Performance Consideration:
+- **`apply()` with lambda**: While `apply()` with a lambda function is flexible, it can be slower compared to **vectorized operations** (like using `np.where()` or direct column operations) because `apply()` operates element by element, whereas vectorized operations work on entire columns or arrays in one go.
+
+In general, for performance reasons, if your transformation can be done using vectorized operations, it's better to use those instead of `apply()` with a lambda.
