@@ -30,8 +30,7 @@ def apply_validation_rule(df, rule):
 # Define the rule based on YAML configuration
 rule = {
     'division': ['HEADQ'],
-    'networkAccess': ['CMARK'],
-    'userType': ['CONTRACTOR']
+    'networkAccess': ['CMARK']
 }
 
 # Apply validation rule to the dataframe
