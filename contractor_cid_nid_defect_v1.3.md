@@ -4,7 +4,7 @@ Q1. Add a validation rule in yaml file
 
 validation_rule:
     -  division:
-        - HEADQ
+        - CMARK
     -  networkAccess:
        -  HEADQ
        userType:
@@ -14,13 +14,13 @@ for
 data = {
     'employeeNumber': [100, 101, 102, 103, 104 ],
     'division': ['HEADQ', 'HEADQ', 'HEADQ', 'HEADQ', 'HEADQ'],
-    'networkAccess': ['HEADQ', 'HEADQ', 'HEADQ', 'HEADQ', 'HEADQ'],
+    'networkAccess': ['HEADQ', 'HEADQ', 'HEADQ', 'HEADQ', 'CMARK'],
     'userType': ['EMPLOYEE', 'EMPLOYEE', 'EMPLOYEE', 'CONTRACTOR', 'CONTRACTOR']
 }
 df = pd.DataFrame(data)
 
+add check, if userType is "CONTRACTOR" then check networkAccess value and validate data, if networkAccess value is "DNE" then use division column and division rule in yaml file to validate data
 
-add check, if userType is "CONTRACTOR" then check networkAccess value, if networkAccess value is not "DNE" then 
 
 To enhance the validation rule to include a check for `networkAccess` when the `userType` is "CONTRACTOR", we can add an additional condition. Specifically, if the `userType` is "CONTRACTOR", we need to check if `networkAccess` is **not** equal to "DNE". If `networkAccess` is "DNE", we should mark the row as invalid, otherwise, it should be valid.
 
