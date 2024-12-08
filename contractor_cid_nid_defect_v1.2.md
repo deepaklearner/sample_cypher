@@ -1,4 +1,8 @@
-suppose i have a pandas dataframe having 5 records. I want to check the value in a column and run a validation for it. how to do that using python 
+Q1. suppose i have a pandas dataframe having 5 records. I want to check the value in a column and run a validation for it. how to do that using python 
+Q2. What is apply?
+Q3. i want to add a check if in column age value is > 30 then add 100 to it
+
+Q1. suppose i have a pandas dataframe having 5 records. I want to check the value in a column and run a validation for it. how to do that using python 
 
 Sure! Here's an updated example with four columns, each having different types of data that you might want to validate. 
 
@@ -82,7 +86,7 @@ print(df)
 - The new columns (`valid_age`, `valid_name`, `valid_score`, `valid_status`) contain `True` or `False` based on whether the values in the corresponding columns pass the validation checks.
 
 
-Q. 2 What is apply?
+Q2 What is apply?
 
 In pandas, the `apply()` function is used to apply a function along the axis of a DataFrame or Series. It's a versatile and powerful method that allows you to apply a function to each element or each row/column, depending on the axis parameter you specify.
 
@@ -195,3 +199,129 @@ dtype: int64
 - **For Series**: `apply()` applies the function to each element.
 - **For DataFrame**: You can apply the function across rows (`axis=1`) or columns (`axis=0`).
 - **Flexibility**: `apply()` is flexible and can be used with any function that operates on individual elements or collections of elements (like a row or column).
+
+Q3 i want to add a check if in column age value is > 30 then add 100 to it
+
+To modify the values in the `'age'` column based on a condition (e.g., if the value is greater than 30, add 100 to it), you can use the `apply()` function with a custom function, or you can use a more efficient vectorized operation with pandas.
+
+I'll demonstrate both approaches.
+
+### Approach 1: Using `apply()` with a custom function
+
+This is similar to the previous approach where you apply a function to each value in the `'age'` column.
+
+```python
+import pandas as pd
+
+# Sample DataFrame
+data = {
+    'age': [25, 30, 35, 40, 28],
+    'name': ['Alice', 'Bob', 'Charlie', 'David', 'Eve']
+}
+df = pd.DataFrame(data)
+
+# Define a function to add 100 if age is greater than 30
+def adjust_age(age):
+    if age > 30:
+        return age + 100
+    return age
+
+# Apply the function to the 'age' column
+df['age'] = df['age'].apply(adjust_age)
+
+# Print the modified DataFrame
+print(df)
+```
+
+### Output:
+
+```plaintext
+   age     name
+0   25    Alice
+1   30      Bob
+2  135  Charlie
+3  140    David
+4   28      Eve
+```
+
+### Explanation:
+- The `adjust_age` function checks if the age is greater than 30. If so, it adds 100 to the value; otherwise, it returns the value unchanged.
+- The `apply(adjust_age)` method applies this function to each element of the `'age'` column.
+
+### Approach 2: Using vectorized operations (faster and more efficient)
+
+Pandas allows for more efficient, **vectorized** operations that work directly on columns without the need to use `apply()`. Here's how you can do it:
+
+```python
+import pandas as pd
+
+# Sample DataFrame
+data = {
+    'age': [25, 30, 35, 40, 28],
+    'name': ['Alice', 'Bob', 'Charlie', 'David', 'Eve']
+}
+df = pd.DataFrame(data)
+
+# Vectorized operation to add 100 to 'age' where it is greater than 30
+df['age'] = df['age'].apply(lambda x: x + 100 if x > 30 else x)
+
+# Print the modified DataFrame
+print(df)
+```
+
+### Output:
+
+```plaintext
+   age     name
+0   25    Alice
+1   30      Bob
+2  135  Charlie
+3  140    David
+4   28      Eve
+```
+
+### Explanation:
+- The lambda function inside `apply()` checks if the value in `'age'` is greater than 30. If so, it adds 100; otherwise, it keeps the original value.
+
+### Approach 3: Using `np.where()` for a vectorized solution
+
+If you want an even more efficient solution, you can use NumPy's `np.where()`. This is a vectorized operation that works faster than `apply()`.
+
+```python
+import pandas as pd
+import numpy as np
+
+# Sample DataFrame
+data = {
+    'age': [25, 30, 35, 40, 28],
+    'name': ['Alice', 'Bob', 'Charlie', 'David', 'Eve']
+}
+df = pd.DataFrame(data)
+
+# Using np.where() for vectorized operation
+df['age'] = np.where(df['age'] > 30, df['age'] + 100, df['age'])
+
+# Print the modified DataFrame
+print(df)
+```
+
+### Output:
+
+```plaintext
+   age     name
+0   25    Alice
+1   30      Bob
+2  135  Charlie
+3  140    David
+4   28      Eve
+```
+
+### Explanation:
+- `np.where(condition, value_if_true, value_if_false)` is used here.
+- If the condition (`df['age'] > 30`) is `True`, it adds 100 to the age; otherwise, it keeps the original value.
+- This operation is **vectorized** and typically faster than `apply()` because it operates directly on the entire column.
+
+### Summary:
+- **`apply()`**: You can use `apply()` with a custom function or lambda to modify values conditionally.
+- **Vectorized operations**: Using `np.where()` is a more efficient and faster way to apply conditions across entire columns without the need for a loop.s
+
