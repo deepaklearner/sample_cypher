@@ -97,3 +97,12 @@ df.loc[condition, df_cvs_identifier.columns] = df_cvs_identifier.values
 This will update all the columns in `df` for the rows where `AetnaIdentifier_flag == 'N'`.
 
 Let me know if you need further clarification!
+
+
+Q3. NaN values
+
+# Condition to identify rows to be updated
+condition = df['AetnaIdentifier_flag'] == 'N'
+
+# Replace NaN values in 'new_column' of df_cvs_identifier with 'N' and update 'new_column' in df
+df.loc[condition, 'new_column'] = df_cvs_identifier['new_column'].fillna('N').values
