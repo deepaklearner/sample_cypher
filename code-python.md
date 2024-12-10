@@ -1,3 +1,8 @@
+In this functi
+on, i dont want to change the case of data of dataframe df  "df[key].str.upper()". Help me modify the code.
+without breaking logic df[key].isin(val).
+
+"""
 ```python
 def data_manipulation_AetnaIdentifier(data_mapping: dict, df: pd.DataFrame):
     # Extract assignment rules from the mapping dictionary
@@ -63,3 +68,8 @@ def data_manipulation_AetnaIdentifier(data_mapping: dict, df: pd.DataFrame):
 
     return df
 ```
+"""
+
+
+can i write "filtered_val = df[key].isin(val)"
+like this "filtered_val = df[key].str.upper().isin(val)"
