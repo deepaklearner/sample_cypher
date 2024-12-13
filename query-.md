@@ -1,4 +1,4 @@
-i have a linux machine in cloud. what are different option to host my fastapi app for production rest api
+# i have a linux machine in cloud. what are different option to host my fastapi app for production rest api
 
 To host a FastAPI app on a Linux machine in the cloud for production, there are several approaches depending on factors like performance requirements, scalability, ease of setup, and cost. Here’s a breakdown of the most common and recommended options:
 
@@ -193,3 +193,6 @@ To host a FastAPI app on a Linux machine in the cloud for production, there are 
 7. **Serverless** (Cost-effective for low traffic or sporadic workloads).
 
 The best choice depends on your traffic, scalability needs, and how much infrastructure management you're willing to handle. For most production environments, **Gunicorn with Uvicorn workers** or **Docker** with a reverse proxy like **Nginx** are often the most reliable and scalable solutions.
+
+
+# there may be 10k requests per second. what should i choose?
