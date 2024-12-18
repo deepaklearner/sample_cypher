@@ -15,7 +15,7 @@ db_credentials_file=$(cat $project_configfile | grep -w "db_credentials_file" | 
 
 
 In my unix script:
-project_configfile='./config/INT5043_INT5353_config-yaml'
+project_configfile='./config/INT5043_INT5353_config.yaml'
 activate_file=$(cat $project_configfile | grep -w "venv_location" | cut -d ':' -f2 | sed 's/^[[:space:]]*//g')
 
 if [ -f "$activate_file" ]; then
