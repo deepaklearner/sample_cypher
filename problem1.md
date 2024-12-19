@@ -65,18 +65,21 @@ Solution #1: in same for loop
 Solution 2: Separate
 
 
-    # Find matching rows in df1 where accountType is 'Secondary'
+    # Find matching rows in df1 where accountType is 'Secondary' for different samaccountname
     matched_rows = df1[(df1['E_EmployeeID'] == cvs_resource_id) & 
-                       (df1['samaccountname'] == samaccountname) & 
+                       (df1['samaccountname'] != samaccountname) & 
                        (df1['domain'] == domain_r) & 
                        (df1['accountType'] == 'Secondary')]
 
     # If matched rows exist, update the accountType from 'Secondary' to 'Primary'
     if not matched_rows.empty:
         df1.loc[(df1['E_EmployeeID'] == cvs_resource_id) & 
-                (df1['samaccountname'] == samaccountname) & 
+                (df1['samaccountname'] != samaccountname) & 
                 (df1['domain'] == domain_r) & 
                 (df1['accountType'] == 'Secondary'), 'accountType'] = 'Primary'
         print(f"Updated accountType to 'Primary' for {samaccountname}")
     else:
         print(f"No Secondary account found for {samaccountname}")
+
+
+also, there is a column in df1 with name concat_attr_col1, i want to append the value of column accountType to concat_attr_col1 along with a | separator
