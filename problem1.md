@@ -51,7 +51,32 @@ If match found, then update the accountType from Secondary to Primary in df1
     else:
         print(f"No Secondary account found for {samaccountname}")
 --
-And another list of dictionaries 
+Solution #1: in same for loop
+
+    # Check if df1 has a matching entry where accountType is 'Secondary' and update it
+    df1.loc[
+        (df1['E_EmployeeID'] == cvs_resource_id) & 
+        (df1['samaccountname'] == samaccountname) & 
+        (df1['domain'] == domain_r) & 
+        (df1['accountType'] == 'Secondary'), 
+        'accountType'
+    ] = 'Primary'  # Update the accountType to 'Primary'
+
+Solution 2: Separate
 
 
-I want to add a new column accountType in df1, 
+    # Find matching rows in df1 where accountType is 'Secondary'
+    matched_rows = df1[(df1['E_EmployeeID'] == cvs_resource_id) & 
+                       (df1['samaccountname'] == samaccountname) & 
+                       (df1['domain'] == domain_r) & 
+                       (df1['accountType'] == 'Secondary')]
+
+    # If matched rows exist, update the accountType from 'Secondary' to 'Primary'
+    if not matched_rows.empty:
+        df1.loc[(df1['E_EmployeeID'] == cvs_resource_id) & 
+                (df1['samaccountname'] == samaccountname) & 
+                (df1['domain'] == domain_r) & 
+                (df1['accountType'] == 'Secondary'), 'accountType'] = 'Primary'
+        print(f"Updated accountType to 'Primary' for {samaccountname}")
+    else:
+        print(f"No Secondary account found for {samaccountname}")
