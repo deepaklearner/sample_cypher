@@ -33,3 +33,23 @@ If N100 is deleted, you need to find all the relationships where A100 is current
         MATCH (a:A100), (newPrimary:UserAccount)
         WHERE newPrimary.accountId = 'A100'  // assuming A100 is now primary
         CREATE (a)-[:CONNECTED_TO {role: 'primary'}]->(newPrimary)
+5. Final Check:
+
+    Ensure that A100 is no longer connected to the secondary UserAccount node.
+    Make sure the new relationships reflect A100 as the primary account and that N100 is properly deleted.
+
+Full cypher:
+        // Step 1: Detach A100 from N100 if N100 is deleted
+        MATCH (a:A100)-[r:CONNECTED_TO]->(userAccount:UserAccount)
+        WHERE userAccount.accountId = 'N100'
+        DELETE r;
+
+        // Step 2: Detach A100 from all secondary accounts
+        MATCH (a:A100)-[r:CONNECTED_TO]->(secondaryUserAccount:UserAccount)
+        WHERE secondaryUserAccount.accountType = 'secondary'
+        DELETE r;
+
+        // Step 3: Make A100 the new primary account
+        MATCH (a:A100), (newPrimary:UserAccount)
+        WHERE newPrimary.accountId = 'A100'
+        CREATE (a)-[:CONNECTED_TO {role: 'primary'}]->(newPrimary);
