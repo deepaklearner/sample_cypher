@@ -10,6 +10,9 @@ How should i handle it?
 Solution 1:
 If N100 is deleted, you need to find all the relationships where A100 is currently connected to N100 as either a "primary" or "secondary" account.
 
+0. Check if N100 Exists in the HR Feed:
+    First, you need to determine if N100 is present in the HR feed or if it has been marked for deletion.
+
 1. Identify the Relationship Between A100 and N100:
 
     If N100 is deleted, you need to find all the relationships where A100 is currently connected to N100 as either a "primary" or "secondary" account.
