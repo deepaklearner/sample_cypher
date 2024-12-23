@@ -42,3 +42,10 @@ else:
 # Print the updated df1 to see changes
 print("\nUpdated df1:")
 print(df1)
+
+
+Notes:
+# Perform concatenation only where 'accountType' is not None (NaN)
+df1.loc[pd.notna(df1['accountType']), 'concat_attr_col1'] = (
+    df1.loc[pd.notna(df1['accountType']), 'concat_attr_col1'] + '|' + df1['accountType']
+)
