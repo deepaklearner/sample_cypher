@@ -15,7 +15,7 @@ SET u.managerid = m.employeeNumber  // Update the managerid with the employeeNum
 RETURN u.employeeNumber, u.managerid // Return the updated node
 
 
-Accomodate this logic in below cypher:
+Accomodate this logic in below cypher before MATCH SET
 """UNWIND $rows AS row
 WITH row
 MATCH (globalid:GlobalidentifierCounter)
@@ -59,6 +59,12 @@ MERGE (apn:ApplicationAccount {applicationAccountName: row.applicationAccount, t
 ON CREATE SET 
     apn.applicationAccountId = apoc.create.uuid()
 
+// If ManagerId starts with "A", lookup the corresponding User node by aetnaresourceid
+WITH row, globalid, hrhub_identifier
+OPTIONAL MATCH (mgr:User {aetnaresourceid: row.ManagerId})
+WITH row, globalid, hrhub_identifier, mgr
+
+// Create or merge the User node and set the properties
 MERGE (usr:User {employeeNumber: row.CVSResourceid})
 ON CREATE SET 
     usr.userProfileID = apoc.create.uuid(),
@@ -66,19 +72,13 @@ ON CREATE SET
     usr.globalID = toString(toInteger(globalid.lastAssignedCouterValue) + 1),
     usr.eligibilityCode = row.EligibilityCode,
     usr.is_entered = 'Y',
-    usr.managerid = row.ManagerId,
+    // Set managerid to the employeeNumber of the matched manager node if found
+    usr.managerid = CASE WHEN mgr IS NOT NULL THEN mgr.employeeNumber ELSE row.ManagerId END,
     usr.transactionType = row.TransactionType,
     usr.transactionCode = row.TransactionCode,
     usr.aetnaresourceid = row.aetnaNetworkID,
     globalid.lastexecutionDate = localdatetime(),
     globalid.lastAssignedCouterValue = toString(toInteger(globalid.lastAssignedCouterValue) + 1)
-
-WITH row, usr
-// If ManagerId starts with "A", lookup the corresponding User node by aetnaresourceid
-WHERE row.ManagerId STARTS WITH 'A'
-OPTIONAL MATCH (mgr:User {aetnaresourceid: row.ManagerId})
-// If a manager is found, update the managerid to their employeeNumber
-SET usr.managerid = mgr.employeeNumber
 
 ON MATCH SET 
     usr.acquisitionCode = row.AcquisitionCode,
@@ -88,5 +88,6 @@ ON MATCH SET
     usr.transactionType = row.TransactionType,
     usr.transactionCode = row.TransactionCode,
     usr.aetnaresourceid = row.aetnaNetworkID
+
 
 
