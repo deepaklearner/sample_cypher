@@ -6,6 +6,15 @@ Search for another User node where aetnaresourceid is matching with the manager 
 
 update the obtained employeeNumber in managerid of 1st User node.
 
+Solution1:
+MATCH (u:User) 
+WHERE u.managerid STARTS WITH 'A'  // Identify the User nodes where managerid starts with 'A'
+MATCH (m:User) 
+WHERE m.aetnaresourceid = u.managerid // Look for the User node where aetnaresourceid matches the managerid
+SET u.managerid = m.employeeNumber  // Update the managerid with the employeeNumber of the found User node
+RETURN u.employeeNumber, u.managerid // Return the updated node
+
+
 Accomodate this logic in below cypher:
 """UNWIND $rows AS row
 WITH row
@@ -37,16 +46,47 @@ ON MATCH SET
     usr.transactionCode = row.TransactionCode,
     usr.aetnaresourceid = row.aetnaNetworkID
 
-// Additional logic to handle hrhub_identifier_used
-FOREACH (_ IN CASE WHEN row.hrhub_identifier_used = "y" THEN [1] ELSE [] END |
-    // Logic for when hrhub_identifier_used = "y"
-)
 """
 
-Solution1:
-MATCH (u:User) 
-WHERE u.managerid STARTS WITH 'A'  // Identify the User nodes where managerid starts with 'A'
-MATCH (m:User) 
-WHERE m.aetnaresourceid = u.managerid // Look for the User node where aetnaresourceid matches the managerid
-SET u.managerid = m.employeeNumber  // Update the managerid with the employeeNumber of the found User node
-RETURN u.employeeNumber, u.managerid // Return the updated node
+full solution 1:
+
+UNWIND $rows AS row
+WITH row
+MATCH (globalid:GlobalidentifierCounter)
+OPTIONAL MATCH (hrhub_identifier:CVSIdentifier {networkid: row.CVSResourceid})
+
+MERGE (apn:ApplicationAccount {applicationAccountName: row.applicationAccount, targetSystem: 'Neo4j'})
+ON CREATE SET 
+    apn.applicationAccountId = apoc.create.uuid()
+
+MERGE (usr:User {employeeNumber: row.CVSResourceid})
+ON CREATE SET 
+    usr.userProfileID = apoc.create.uuid(),
+    usr.acquisitionCode = row.AcquisitionCode,
+    usr.globalID = toString(toInteger(globalid.lastAssignedCouterValue) + 1),
+    usr.eligibilityCode = row.EligibilityCode,
+    usr.is_entered = 'Y',
+    usr.managerid = row.ManagerId,
+    usr.transactionType = row.TransactionType,
+    usr.transactionCode = row.TransactionCode,
+    usr.aetnaresourceid = row.aetnaNetworkID,
+    globalid.lastexecutionDate = localdatetime(),
+    globalid.lastAssignedCouterValue = toString(toInteger(globalid.lastAssignedCouterValue) + 1)
+
+WITH row, usr
+// If ManagerId starts with "A", lookup the corresponding User node by aetnaresourceid
+WHERE row.ManagerId STARTS WITH 'A'
+OPTIONAL MATCH (mgr:User {aetnaresourceid: row.ManagerId})
+// If a manager is found, update the managerid to their employeeNumber
+SET usr.managerid = mgr.employeeNumber
+
+ON MATCH SET 
+    usr.acquisitionCode = row.AcquisitionCode,
+    usr.eligibilityCode = row.EligibilityCode,
+    usr.is_updated = 'Y',
+    usr.managerid = row.ManagerId,
+    usr.transactionType = row.TransactionType,
+    usr.transactionCode = row.TransactionCode,
+    usr.aetnaresourceid = row.aetnaNetworkID
+
+
