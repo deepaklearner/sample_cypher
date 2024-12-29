@@ -1,5 +1,14 @@
-Based on this sample project,
+Based on this project below,
 
+create a scalable and maintainable RestAPI project using FastAPI with below characteristics:
+
+1. with good naming conventions with examples of how different teams can interact with the API through Unix-based commands to interact with neo4j iam data.
+2. i want the different teams to access this api via unix. It can contain 20+ rest api end points. Create atleast 5 endpoints with some parameters. 
+3. Also have a the feature for versioning.
+4. Also, it should have pagination feature if required.
+5. Reuse the existing files config.yaml, helper.py and retrieve_azure_creds.py
+
+Project: """
 Supervisor_hierachy/
 ├── config/
 │   ├── config.yaml
@@ -14,7 +23,7 @@ Supervisor_hierachy/
 └── README.md
 
 config.yaml
-"""
+
 common_ProjConfig:
   venv_location: /opt/cvs/deepak/venv/bin/activate
   timeout_duration: 14400
@@ -401,9 +410,4 @@ if __name__ == "__main__":
     tracemalloc.stop()
 """
 
-create a scalable and maintainable FastAPI project with good naming conventions with examples of how different teams can interact with the API through Unix-based commands to interact with neo4j iam data.
 
-Note: i want the different teams to access this api via unix. This is not only for supervisor hierachy, it can contain 20+ rest api end points. Create atleast 5 endpoints with some parameters. 
-Also have a the feature for versioning.
-
-Also, it should have pagination feature if required.
