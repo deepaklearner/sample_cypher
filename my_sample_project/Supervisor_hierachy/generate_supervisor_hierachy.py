@@ -5,8 +5,8 @@ import logging
 import tracemalloc
 import argparse
 import csv
-from ne04 import GraphDatabase, exceptions
-from sc.utils.helper import read_creds, initialize_main_logger, get_config_stream
+from neo4j import GraphDatabase, exceptions
+from src.utils.helper import read_creds, initialize_main_logger, get_config_stream
 
 # Setting up paths
 currentdir = os.path.dirname(os.path.realpath(__file__))

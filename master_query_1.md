@@ -1,5 +1,4 @@
-Based on this sample project, 
-Supervisor
+Based on this sample project,
 
 Supervisor_hierachy/
 ├── config/
@@ -402,6 +401,9 @@ if __name__ == "__main__":
     tracemalloc.stop()
 """
 
-can you please create a sample project for me with good naming conventions which is easier to scale and also easier to maintain? also i want the different teams to access this api using unix
+create a scalable and maintainable FastAPI project with good naming conventions with examples of how different teams can interact with the API through Unix-based commands to interact with neo4j iam data.
 
-Certainly! Below is an example of how to structure a scalable and maintainable FastAPI project with good naming conventions. I’ll guide you through a modular structure, explain how to organize the code for easy scaling, and provide examples of how different teams can interact with the API through Unix-based commands.
+Note: i want the different teams to access this api via unix. This is not only for supervisor hierachy, it can contain 20+ rest api end points. Create atleast 5 endpoints with some parameters. 
+Also have a the feature for versioning.
+
+Also, it should have pagination feature if required.
