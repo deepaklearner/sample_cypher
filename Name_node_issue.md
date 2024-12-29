@@ -1,1 +1,0 @@
-In neo4j, how to store Name node to store first name, last name, etc
