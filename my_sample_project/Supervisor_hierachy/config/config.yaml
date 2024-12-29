@@ -1,0 +1,49 @@
+common_ProjConfig:
+  venv_location: /opt/cvs/deepak/venv/bin/activate
+  timeout_duration: 14400
+  main_log_history_days: 30
+  error_log_history_days: 30
+  stat_log_history_days: 30
+  dev_keyvaulturi: kv-corpneo4j0101
+  uat_east_keyvaulturi: kv-corpne04j0601
+  uat_central_keyvaulturi: kv-corpneo4j0602
+  prod_east_keyvaulturi: kv-corpne04j0701
+  prod_central_keyvaulturi: kv-corpne04j0702
+
+configyaml:
+  KeyvaultURI:
+    dev_keyvaulturi: kv-corpne04j0101
+    uat_east_keyvaulturi: kv-corpne4j0601
+    uat_central_keyvaulturi: kv-corpne04j0602
+    prod_east_keyvaulturi: kv-corpne04j0701
+    prod_central_keyvaulturi: kv-corpne04j0702
+
+  MailServer:
+    MAIL_SERVER: Upstream-SMTP-MAIL-SERVER
+    MAIL_PORT: Upstream-SMTP-MAIL-PORT
+    MAIL_FROM: Upstream-SMTP-MAIL-FROM
+    MAIL_SENDER_NAME: Upstream-SMTP-MAIL-SENDER-NAME
+    MAIL_TO: Upstream-SMTP-MAIL-TO
+
+  NE04J:
+    Username: Upstream-NE04J-Username
+    Password: Upstream-NE04J-Password
+    Database: Upstream-NE04J-Database
+    HostURI: Upstream-NE04J-HostURI
+    ServiceAccount: Upstream-GLIDE-Username
+
+  FileShare:
+    filesharename: Upstream-Neo4j-FileShare-Name
+
+supervisor_hierarchy_ProjConfig:
+  log_location: /opt/cvs/deepak/logs/Ne4J_Inbound_dev/pipeline_routines/supervisor_hierarchy/populate_supervis
+  batch_size: 5000
+  supervisor_hierarchy_query: |
+    call apoc.periodic.iterate("match (n:User) where n.managerid is not null AND ('Employee' IN labels(n) OR
+    // Delete mismatching managerid relationships
+    optional match (n)-[r:REPORTS_TO]->(m:User)
+    WHERE
+    (NOT TOUPPER(n.managerid) STARTS WITH 'A' AND n.managerid <> m.employeeNumber) OR
+    (TOUPPER(n.managerid) STARTS WITH 'A' AND n.managerid <> m.aetnaresourceid)
+    delete r
+    // Determining managerid type
