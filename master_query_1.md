@@ -18,8 +18,6 @@ Supervisor_hierachy/
 │   │   ├── __init__.py   
 │   │   ├── helper.py
 │   │   ├── retrieve_azure_creds.py
-├── generate_supervisor_hierachy.sh
-├── generate_supervisor_hierachy.py
 └── README.md
 
 config.yaml
