@@ -269,6 +269,8 @@ logger = initialize_main_logger()
 # Merge config_data and secrets
 config = {**config_data, **secrets}
 
+round 4:
+
 from pydantic import BaseModel
 from src.utils.helper import read_yaml_file, initialize_main_logger
 from src.utils.retrieve_azure_creds import ReadSecretsFromKeyVault
@@ -287,7 +289,6 @@ secrets = secret_reader.read_secret_from_keyvault()
 settings = Settings()
 logger = initialize_main_logger()
 
-round 4:
 # Determine environment based on hostname
 hostname = socket.gethostname()
 if re.search(r'dl\d', hostname):
