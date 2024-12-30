@@ -268,3 +268,36 @@ logger = initialize_main_logger()
 
 # Merge config_data and secrets
 config = {**config_data, **secrets}
+
+from pydantic import BaseModel
+from src.utils.helper import read_yaml_file, initialize_main_logger
+from src.utils.retrieve_azure_creds import ReadSecretsFromKeyVault
+import socket
+import re
+
+class Settings(BaseModel):
+    PROJECT_NAME: str = "IAM API"
+    API_V1_STR: str = "/api/v1"
+
+config_file_path = './config/config.yaml'
+config_data = read_yaml_file(config_file_path)
+secret_reader = ReadSecretsFromKeyVault(config_file_path)
+secrets = secret_reader.read_secret_from_keyvault()
+
+settings = Settings()
+logger = initialize_main_logger()
+
+round 4:
+# Determine environment based on hostname
+hostname = socket.gethostname()
+if re.search(r'dl\d', hostname):
+    environment = 'dev'
+elif re.search(r'ul\d', hostname):
+    environment = 'uat'
+elif re.search(r'pl\d', hostname):
+    environment = 'prod'
+else:
+    environment = 'unknown'
+
+# Merge config_data, secrets, and environment
+config = {**config_data, **secrets, 'environment': environment}
