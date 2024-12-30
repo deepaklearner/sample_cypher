@@ -249,3 +249,22 @@ This modification ensures that we're using the retrieve_azure_creds.py file to s
 
 Citations:
 [1] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/8978744/5812171a-51b8-4ec1-b6a0-221fe157e53b/paste.txt
+
+from pydantic import BaseModel
+from src.utils.helper import read_yaml_file, initialize_main_logger
+from src.utils.retrieve_azure_creds import ReadSecretsFromKeyVault
+
+class Settings(BaseModel):
+    PROJECT_NAME: str = "IAM API"
+    API_V1_STR: str = "/api/v1"
+
+config_file_path = './config/config.yaml'
+config_data = read_yaml_file(config_file_path)
+secret_reader = ReadSecretsFromKeyVault(config_file_path)
+secrets = secret_reader.read_secret_from_keyvault()
+
+settings = Settings()
+logger = initialize_main_logger()
+
+# Merge config_data and secrets
+config = {**config_data, **secrets}
