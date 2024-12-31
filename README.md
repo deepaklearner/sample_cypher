@@ -5,9 +5,7 @@ There is a
 
 write a cypher query to validate for every record in dataframe df, if the managerid exists in neo4j db then include it else exclude the record.
 
-
-Research:
-generative UI
-AI Agents
-
-FOr identity data services and by using AI agents what best we can serve to the customers.
+I already have a code:
+df = df[~(df['START_DATE']=='DNE')&
+         ~(df['END_DATE']=='DNE')
+]
