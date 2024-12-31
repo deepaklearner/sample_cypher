@@ -1,3 +1,5 @@
+ in df missing_data_vendors add a column with record rejection reason like start_date, end_date etc column name
+ 
 def identify_vendor_reject_records(df):
     """
     Function to identify valid records for vendors and missing data vendors.
