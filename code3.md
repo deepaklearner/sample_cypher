@@ -1,5 +1,6 @@
-Modify below code to include a column rejection_reason with value as the column name having issue.
+Modify below code to create a rejected_vendors dataframe havng only columns as CM_PERS_ID, managerid (if exists) and a new column column rejection_reason in it with value as the column name having issue.
 Give me a simple solution which is easy to understand and with minimal change in existing code.
+
 
 def identify_vendor_reject_records(df):
     total_emps = set(df['CM_PERS_ID'])
