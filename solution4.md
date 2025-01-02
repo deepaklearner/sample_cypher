@@ -1,3 +1,17 @@
+can we do these in cypher itself """# Add manager email to invalid records only
+    missing_data_vendors['ManagerEmail'] = missing_data_vendors['MANAGER_ID'].map(manager_email_dict)
+
+    # Identify records with invalid manager IDs (i.e., manager ID not found in Neo4j)
+    invalid_manager_mask = missing_data_vendors['ManagerEmail'] == 'NOT_FOUND'
+    invalid_manager_records = missing_data_vendors[invalid_manager_mask].copy()
+    invalid_manager_records['FailureReason'] = 'MANAGER_ID not found in Neo4j'
+    
+    # Add records with invalid manager IDs to missing_data_vendors
+    missing_data_vendors = pd.concat([missing_data_vendors, invalid_manager_records], ignore_index=True)
+
+also, i want to pass missing_data_vendors as well to cypher so that most of the things can be done in cypher
+
+Solution:
 Yes, it is possible to implement the logic in Cypher itself for identifying invalid manager records, instead of using Python and pandas. The basic idea would be to identify the records in the database (in this case, Neo4j) that have a manager ID and check whether that manager exists. If the manager does not exist, you would return a record indicating the failure.
 
 Let me walk you through the equivalent Cypher logic for your task.
