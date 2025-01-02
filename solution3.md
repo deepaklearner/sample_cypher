@@ -52,14 +52,16 @@ def identify_vendor_reject_records(df, neo4j_driver):
     # Add records with invalid manager IDs to missing_data_vendors
     missing_data_vendors = pd.concat([missing_data_vendors, invalid_manager_records], ignore_index=True)
 
-    # Keep only records with valid manager IDs in df
+    # Reset the index of the DataFrame to avoid indexing errors
+    df = df.reset_index(drop=True)
+
+    # Reset the index of the boolean mask to align with df
+    invalid_manager_mask = invalid_manager_mask.reset_index(drop=True)
+
+    # Now apply the boolean mask to filter out invalid manager records
     df = df[~invalid_manager_mask]
 
     # Update missing_data_vendors set
     missing_data_vendors_set = total_emps - set(df['CM_PERS_ID'])
 
     return df, missing_data_vendors, missing_data_vendors_set
-
-# Usage example:
-# neo4j_driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
-# valid_df, missing_data_vendors_df, missing_data_vendors_set = identify_vendor_reject_records(df, neo4j_driver)
