@@ -28,11 +28,12 @@ def identify_vendor_reject_records(df, neo4j_driver):
     # Extract unique manager IDs for Neo4j validation (only for rejected records)
     invalid_manager_ids = missing_data_vendors['MANAGER_ID'].unique().tolist()
 
-    # Cypher query to validate manager IDs and get the manager's email (only for invalid manager IDs)
+    # Single Cypher query to validate manager IDs and fetch manager's email for invalid records
     cypher_query = """
     UNWIND $manager_ids AS manager_id
     MATCH (u:User {employeeNumber: manager_id})-[:HAS_ATTRIBUTE]->(we:WorkEmail)
-    RETURN u.employeeNumber AS manager_id, we.email AS manager_email
+    OPTIONAL MATCH (u)-[:HAS_ATTRIBUTE]->(we2:WorkEmail)
+    RETURN u.employeeNumber AS manager_id, coalesce(we.email, 'NOT_FOUND') AS manager_email
     """
 
     # Validate manager IDs in Neo4j and fetch manager emails for invalid records
@@ -44,7 +45,7 @@ def identify_vendor_reject_records(df, neo4j_driver):
     missing_data_vendors['ManagerEmail'] = missing_data_vendors['MANAGER_ID'].map(manager_email_dict)
 
     # Identify records with invalid manager IDs (i.e., manager ID not found in Neo4j)
-    invalid_manager_mask = ~missing_data_vendors['MANAGER_ID'].isin(manager_email_dict.keys())
+    invalid_manager_mask = missing_data_vendors['ManagerEmail'] == 'NOT_FOUND'
     invalid_manager_records = missing_data_vendors[invalid_manager_mask].copy()
     invalid_manager_records['FailureReason'] = 'MANAGER_ID not found in Neo4j'
     
