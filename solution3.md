@@ -4,7 +4,7 @@ from neo4j import GraphDatabase
 def identify_vendor_reject_records(df, neo4j_driver):
     """
     Function to identify valid records for vendors and missing data vendors,
-    including Neo4j validation for manager IDs and fetching manager email.
+    including Neo4j validation for manager IDs and fetching manager email only for invalid records.
     """
     # Columns to check for 'DNE' values
     columns_to_check = ['START_DATE', 'END_DATE', 'MANAGER_ID', 'FIRST_NAME', 'LAST_NAME', 'CX_PV_SOURCE']
@@ -25,27 +25,27 @@ def identify_vendor_reject_records(df, neo4j_driver):
     # Keep only valid records in df
     df = df[~reject_condition]
 
-    # Extract unique manager IDs for Neo4j validation
-    manager_ids = df['MANAGER_ID'].unique().tolist()
+    # Extract unique manager IDs for Neo4j validation (only for rejected records)
+    invalid_manager_ids = missing_data_vendors['MANAGER_ID'].unique().tolist()
 
-    # Cypher query to validate manager IDs and get the manager's email
+    # Cypher query to validate manager IDs and get the manager's email (only for invalid manager IDs)
     cypher_query = """
     UNWIND $manager_ids AS manager_id
     MATCH (u:User {employeeNumber: manager_id})-[:HAS_ATTRIBUTE]->(we:WorkEmail)
     RETURN u.employeeNumber AS manager_id, we.email AS manager_email
     """
 
-    # Validate manager IDs in Neo4j and fetch manager emails
+    # Validate manager IDs in Neo4j and fetch manager emails for invalid records
     with neo4j_driver.session() as session:
-        result = session.run(cypher_query, manager_ids=manager_ids)
+        result = session.run(cypher_query, manager_ids=invalid_manager_ids)
         manager_email_dict = {record['manager_id']: record['manager_email'] for record in result}
 
-    # Add manager email to valid records
-    df['ManagerEmail'] = df['MANAGER_ID'].map(manager_email_dict)
+    # Add manager email to invalid records only
+    missing_data_vendors['ManagerEmail'] = missing_data_vendors['MANAGER_ID'].map(manager_email_dict)
 
-    # Identify records with invalid manager IDs
-    invalid_manager_mask = ~df['MANAGER_ID'].isin(manager_email_dict.keys())
-    invalid_manager_records = df[invalid_manager_mask].copy()
+    # Identify records with invalid manager IDs (i.e., manager ID not found in Neo4j)
+    invalid_manager_mask = ~missing_data_vendors['MANAGER_ID'].isin(manager_email_dict.keys())
+    invalid_manager_records = missing_data_vendors[invalid_manager_mask].copy()
     invalid_manager_records['FailureReason'] = 'MANAGER_ID not found in Neo4j'
     
     # Add records with invalid manager IDs to missing_data_vendors
