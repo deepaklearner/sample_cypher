@@ -1,5 +1,9 @@
 can we rename dne_mask as reject_condition. 
 
+rename column rejection_reason as FailureReason and
+also, include the manager email from neo4j. We have a WorkEmail node having property email which is having below relationship with User node.
+(u:User)-[:HAS_ATTRIBUTE]->(we:WorkEmail)
+
 import pandas as pd
 from neo4j import GraphDatabase
 
