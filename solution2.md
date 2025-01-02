@@ -1,4 +1,4 @@
-can we rename dne_mask as reject_condition
+can we rename dne_mask as reject_condition. 
 
 import pandas as pd
 from neo4j import GraphDatabase
@@ -19,8 +19,8 @@ def identify_vendor_reject_records(df, neo4j_driver):
 
     # Capture rejected records with reasons
     missing_data_vendors = df[reject_condition].copy()
-    missing_data_vendors['rejection_reason'] = df[columns_to_check].apply(
-        lambda row: ', '.join([f"{col} is DNE" for col, val in row.items() if val == 'DNE']),
+    missing_data_vendors['FailureReason'] = df[columns_to_check].apply(
+        lambda row: ', '.join([f"{col} is having invalid data" for col, val in row.items() if val == 'DNE']),
         axis=1
     )
 
@@ -45,7 +45,7 @@ def identify_vendor_reject_records(df, neo4j_driver):
     # Identify records with invalid manager IDs
     invalid_manager_mask = ~df['MANAGER_ID'].isin(valid_manager_ids)
     invalid_manager_records = df[invalid_manager_mask].copy()
-    invalid_manager_records['rejection_reason'] = 'MANAGER_ID not found in Neo4j'
+    invalid_manager_records['FailureReason'] = 'MANAGER_ID not found in Neo4j'
     
     # Add records with invalid manager IDs to missing_data_vendors
     missing_data_vendors = pd.concat([missing_data_vendors, invalid_manager_records], ignore_index=True)
