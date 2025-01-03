@@ -32,12 +32,12 @@ def identify_vendor_reject_records(df, neo4j_driver):
     with neo4j_driver.session() as session:
         result = session.run("""
         UNWIND $emp_ids AS emp_id
-        MATCH (u:User {employeeNumber: emp_id})
-        RETURN u.employeeNumber AS existing_emp_id
+        OPTIONAL MATCH (u:User {employeeNumber: emp_id})
+        WITH emp_id, u
+        WHERE u IS NULL
+        RETURN emp_id AS non_existing_emp_id
         """, emp_ids=list(total_emps))
-        existing_emp_ids = set(record['existing_emp_id'] for record in result)
-
-    new_emp_ids = total_emps - existing_emp_ids
+        new_emp_ids = set(record['non_existing_emp_id'] for record in result)
 
     # Separate new and existing records
     new_records = df[df['CM_PERS_ID'].isin(new_emp_ids)]
