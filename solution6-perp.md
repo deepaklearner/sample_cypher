@@ -25,10 +25,14 @@ def identify_vendor_reject_records(df, neo4j_driver):
     new_records = df[~df['CM_PERS_ID'].isin(existing_ids)]
 
     def generate_failure_reason(row, columns, prefix):
-        invalid_columns = [col for col, val in row[columns].items() if val == 'DNE']
-        if invalid_columns:
+    invalid_columns = [col for col, val in row[columns].items() if val == 'DNE']
+    if invalid_columns:
+        if prefix.startswith("Update"):
+            return f"{prefix}: {' and '.join(invalid_columns)} having invalid data; Record processed"
+        else:
             return f"{prefix}: {' and '.join(invalid_columns)} having invalid data; Unable to process the record"
-        return ""
+    return ""
+
 
     # Process existing records (updates)
     existing_reject_condition = (existing_records[update_reject_columns] == 'DNE').any(axis=1)
