@@ -1,4 +1,4 @@
-Certainly! Here's the full updated code incorporating all the modifications we've discussed:
+I apologize for the misunderstanding. You're absolutely right, we should group all column names together for all scenarios. Let's modify the code to achieve this for both new and existing records. Here's the updated version of the `identify_vendor_reject_records` function:
 
 ```python
 import pandas as pd
@@ -24,36 +24,35 @@ def identify_vendor_reject_records(df, neo4j_driver):
     existing_records = df[df['CM_PERS_ID'].isin(existing_ids)]
     new_records = df[~df['CM_PERS_ID'].isin(existing_ids)]
 
+    def generate_failure_reason(row, columns, prefix):
+        invalid_columns = [col for col, val in row[columns].items() if val == 'DNE']
+        if invalid_columns:
+            return f"{prefix}: {' and '.join(invalid_columns)} having invalid data; Unable to process the record"
+        return ""
+
     # Process existing records (updates)
     existing_reject_condition = (existing_records[update_reject_columns] == 'DNE').any(axis=1)
     existing_warn_condition = (existing_records[update_warn_columns] == 'DNE').any(axis=1)
     
     existing_rejected = existing_records[existing_reject_condition].copy()
-    existing_rejected['FailureReason'] = existing_rejected[update_reject_columns].apply(
-        lambda row: 'Update rejected: ' + ', '.join([f"{col} is having invalid data" for col, val in row.items() if val == 'DNE']),
+    existing_rejected['FailureReason'] = existing_rejected.apply(
+        lambda row: generate_failure_reason(row, update_reject_columns, "Update rejected"),
         axis=1
     )
 
     existing_warned = existing_records[existing_warn_condition & ~existing_reject_condition].copy()
-    existing_warned['FailureReason'] = existing_warned[update_warn_columns].apply(
-        lambda row: 'Update warning: ' + ', '.join([f"{col} is having invalid data" for col, val in row.items() if val == 'DNE']),
+    existing_warned['FailureReason'] = existing_warned.apply(
+        lambda row: generate_failure_reason(row, update_warn_columns, "Update warning"),
         axis=1
     )
 
     # Process new records
     new_reject_condition = (new_records[columns_to_check] == 'DNE').any(axis=1)
     new_rejected = new_records[new_reject_condition].copy()
-
-    def generate_failure_reason(row):
-        invalid_columns = [col for col, val in row.items() if val == 'DNE']
-        grouped_columns = []
-        if 'START_DATE' in invalid_columns and 'END_DATE' in invalid_columns:
-            grouped_columns.append('START_DATE and END_DATE')
-            invalid_columns = [col for col in invalid_columns if col not in ['START_DATE', 'END_DATE']]
-        grouped_columns.extend(invalid_columns)
-        return 'New record rejected: ' + ', '.join(grouped_columns) + ' having invalid data; Unable to process the record'
-
-    new_rejected['FailureReason'] = new_rejected[columns_to_check].apply(generate_failure_reason, axis=1)
+    new_rejected['FailureReason'] = new_rejected.apply(
+        lambda row: generate_failure_reason(row, columns_to_check, "New record rejected"),
+        axis=1
+    )
 
     # Combine rejected and warned records
     missing_data_vendors = pd.concat([existing_rejected, existing_warned, new_rejected], ignore_index=True)
@@ -98,6 +97,7 @@ def identify_vendor_reject_records(df, neo4j_driver):
 
     return df, missing_data_vendors, missing_data_vendors_set
 
+# The get_existing_employee_ids function remains the same
 def get_existing_employee_ids(neo4j_driver, ids):
     cypher_query = """
     UNWIND $ids AS id
@@ -109,15 +109,16 @@ def get_existing_employee_ids(neo4j_driver, ids):
         return set(record['employee_id'] for record in result)
 ```
 
-This code incorporates all the requirements and modifications we've discussed:
+This updated version:
 
-1. It separates processing for new and existing records.
-2. For new records, it checks all specified columns for 'DNE' values and rejects if any are found, grouping 'START_DATE' and 'END_DATE' if both are invalid.
-3. For existing records (updates), it:
-   - Rejects if MANAGER_ID, START_DATE, or END_DATE have 'DNE' values.
-   - Warns (adds to missing_data_vendors) but doesn't reject if FIRST_NAME, LAST_NAME, or CX_PV_SOURCE have 'DNE' values.
-4. It uses different failure reasons for new and update scenarios.
-5. The Neo4j query uses UNWIND for better performance.
-6. It efficiently determines existing records by querying Neo4j with all IDs at once.
+1. Introduces a `generate_failure_reason` function that groups all invalid column names together for any scenario.
+2. Uses this function for both new and existing records, ensuring consistent formatting across all cases.
+3. For existing records, it still separates reject and warn conditions but uses the same formatting for the FailureReason.
+4. For new records, it checks all columns and groups them together in the FailureReason if they have 'DNE' values.
 
-This code should handle all the scenarios we've discussed, including the specific formatting of the FailureReason for new records with multiple invalid columns.
+This approach will result in FailureReason messages like:
+- "New record rejected: START_DATE and END_DATE and MANAGER_ID having invalid data; Unable to process the record"
+- "Update rejected: START_DATE and MANAGER_ID having invalid data; Unable to process the record"
+- "Update warning: FIRST_NAME and LAST_NAME having invalid data; Unable to process the record"
+
+This should meet your requirement of grouping column names together for all scenarios.
