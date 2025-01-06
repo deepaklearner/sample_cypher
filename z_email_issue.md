@@ -1,9 +1,19 @@
-I have  pandas dataframe. In that dataframe i have many 10 columns.
-The 2nd last column is Reject_Warn_Reason and last column is ManagerEmail.
+This code is sending 1st email fine. But in 2nd emaill, its sending 1st data as well.
+and in 3rd email, its sending 1st and 2nd iteration data as well. Please fix.
 
-1. I want to groupby on ManagerEmail column
-2. Send email of grouped data to that Manager Email.
+Solution:
 
+
+To fix this, you should create a new instance of MIMEMultipart() for each email, so that each email is sent with only its respective data.
+
+Move below in for loop:
+                # Create a new email message for each iteration
+                message = MIMEMultipart()
+                message['From'] = formataddr((strHeader(self.mail_sender_name, 'utf-8'), self.mail_from))
+                message['To'] = to_email
+                message['Subject'] = mail_subject
+
+                
 Code:
 
 def send_reject_mail(self, data_vendors):
