@@ -5,6 +5,8 @@ MATCH (u:User {employeeNumber: manager_id})-[:HAS_ATTRIBUTE]->(we:WorkEmail)
 RETURN u.employeeNumber AS manager_id, 
        COALESCE(we.email, 'DNE') AS manager_email""" do i need to make any other change in my code?
 
+df['ManagerEmail'] = df['ManagerEmail'].fillna('DNE')
+
 
 import pandas as pd
 from neo4j import GraphDatabase
