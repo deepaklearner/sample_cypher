@@ -1,11 +1,8 @@
-I have a pandas dataframe df with many columns, one of the field is managerid. This df is created from a txt file.
+pip install python-ldap --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org
 
-I have a User node in neo4j db with property employeeNumber and managerid.
-There is a 
+while installing python-ldap i am getting error There was a problem confirming the certificate
 
-write a cypher query to validate for every record in dataframe df, if the managerid exists in neo4j db then include it else exclude the record.
+python3 -m venv venv
+source venv/bin/activate  # On Windows use `venv\Scripts\activate`
 
-I already have a code:
-df = df[~(df['START_DATE']=='DNE')&
-         ~(df['END_DATE']=='DNE')
-]
+pip install python-ldap
