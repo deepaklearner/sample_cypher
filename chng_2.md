@@ -44,9 +44,9 @@ FOREACH (x IN CASE WHEN usr IS NOT NULL THEN [1] END |
 // If the User node is not found, log the missing manager
 WITH row, dept, usr
 WHERE usr IS NULL
-RETURN 'Manager not found in Neo4j: ' + row.current_manager AS MissingManager
+WITH 'Manager not found in Neo4j: ' + row.current_manager AS MissingManager
 
-RETURN COUNT(*)
+RETURN COUNT(*), COLLECT(MissingManager) AS MissingManagers
 """
 
 # Sample data to pass as parameters
