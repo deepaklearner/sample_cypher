@@ -1,0 +1,1 @@
+how to skip the ssl certificate in python for a server
