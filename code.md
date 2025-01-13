@@ -1,3 +1,5 @@
+How to optimize this cypher. I have half million User data. Also check if i made any logical mistake.
+
 MATCH (u:User) 
 WHERE u.managerid IS NOT NULL 
 AND ("Employee" IN labels(u) OR "Contractor" IN labels(u))
