@@ -106,3 +106,96 @@ Citations:
 [7] https://www.reddit.com/r/learnpython/comments/kpjnly/pandas_dataframe_to_neo4j/
 [8] https://neo4j.com/docs/cypher-manual/current/planning-and-tuning/query-tuning/
 [9] https://stackoverflow.com/questions/73793803/create-nodes-and-relationships-in-neo4j-with-inputs-as-a-pandas-dataframe-with-p
+
+
+i want to optimize this part more ... """query = """
+    MATCH (u:User) 
+    WHERE u.managerid IS NOT NULL 
+    AND ("Employee" IN labels(u) OR "Contractor" IN labels(u))
+    OPTIONAL MATCH (u)-[:REPORTS_TO*1..15]->(m:User)
+    OPTIONAL MATCH (m)-[:HAS_ATTRIBUTE]->(n:Name)
+    OPTIONAL MATCH (m)-[:HAS_ATTRIBUTE]->(w:WorkEmail)
+    WITH u, COLLECT(DISTINCT {
+        managerid: m.employeeNumber,
+        manager_fname: n.givenName,
+        manager_lname: n.familyName,
+        manager_work_email: w.email
+    }) AS managers
+    RETURN u.employeeNumber AS employeeid, managers
+    ORDER BY u.employeeNumber
+    SKIP $offset LIMIT $batch_size
+    """"""
+
+
+
+Certainly! We can optimize this query further by breaking it down into smaller, more manageable parts. This approach will reduce the complexity of each query and potentially improve performance. Here's an optimized version:
+
+```python
+def fetch_users(tx, offset, batch_size):
+    query = """
+    MATCH (u:User) 
+    WHERE u.managerid IS NOT NULL 
+    AND ("Employee" IN labels(u) OR "Contractor" IN labels(u))
+    RETURN u.employeeNumber AS employeeid, u.managerid AS managerid
+    ORDER BY u.employeeNumber
+    SKIP $offset LIMIT $batch_size
+    """
+    result = tx.run(query, offset=offset, batch_size=batch_size)
+    return [dict(record) for record in result]
+
+def fetch_manager_chain(tx, employeeid):
+    query = """
+    MATCH (u:User {employeeNumber: $employeeid})
+    MATCH (u)-[:REPORTS_TO*0..15]->(m:User)
+    OPTIONAL MATCH (m)-[:HAS_ATTRIBUTE]->(n:Name)
+    OPTIONAL MATCH (m)-[:HAS_ATTRIBUTE]->(w:WorkEmail)
+    RETURN m.employeeNumber AS managerid, 
+           n.givenName AS manager_fname, 
+           n.familyName AS manager_lname, 
+           w.email AS manager_work_email
+    ORDER BY length((u)-[:REPORTS_TO*]->(m))
+    """
+    result = tx.run(query, employeeid=employeeid)
+    return [dict(record) for record in result]
+
+def process_all_data():
+    offset = 0
+    batch_size = 1000
+    all_results = []
+    
+    with driver.session() as session:
+        while True:
+            users = session.read_transaction(fetch_users, offset, batch_size)
+            if not users:
+                break
+            
+            for user in users:
+                managers = session.read_transaction(fetch_manager_chain, user['employeeid'])
+                user['managers'] = managers
+            
+            result = process_batch(users)
+            all_results.append(result)
+            
+            offset += batch_size
+    
+    final_result = pd.concat(all_results, ignore_index=True)
+    return final_result
+```
+
+This optimized version offers several improvements:
+
+1. It separates the user fetching and manager chain fetching into two distinct queries. This allows for more granular control and potentially better query optimization by Neo4j.
+
+2. The `fetch_users` function now only retrieves the basic user information (employeeid and managerid) for the batch. This reduces the amount of data transferred in the initial query.
+
+3. The `fetch_manager_chain` function is called for each user individually. This allows for better use of indexes and could potentially be faster, especially for users with fewer levels of management.
+
+4. By using `MATCH (u)-[:REPORTS_TO*0..15]->(m:User)` instead of `OPTIONAL MATCH`, we ensure we're only processing actual managers, which could reduce the amount of data processed.
+
+5. The `ORDER BY length((u)-[:REPORTS_TO*]->(m))` in the `fetch_manager_chain` query ensures that the managers are returned in the correct order (direct manager first, then their manager, and so on).
+
+6. This approach allows for easy parallelization if needed. You could process multiple users' manager chains concurrently using Python's multiprocessing or concurrent.futures modules.
+
+Remember to adjust the `process_batch` function to work with the new data structure where each user has a 'managers' list instead of a single 'managers' field.
+
+This optimized version should reduce the load on Neo4j by breaking down the complex query into simpler, more manageable parts. It also provides more flexibility for further optimizations if needed.
