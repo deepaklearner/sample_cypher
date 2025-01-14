@@ -14,6 +14,8 @@ row1: 1003, Raushan, ra@gmail.com
 I want to merge both and create below:
 employeeid, L1managerid, L1manager_name, L1manager_email , L2managerid,L2manager_name, L3manager_email, L3managerid, L3manager_name, L3manager_email etc upto 15 levels
 
+give me optimized way... as i need to do this for a .5 million of records
+
 code:
 import pandas as pd
 
