@@ -1,0 +1,1 @@
+CREATE CONSTRAINT WorkPhone IF NOT EXISTS FOR (n:WorkPhone) REQUIRE (n.phoneNumber, n.phoneCountryCode, n.phoneExtension) is NODE KEY
