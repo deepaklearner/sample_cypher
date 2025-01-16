@@ -1,4 +1,4 @@
-I want to move only the REDUCE logic to python... can we do that 
+After running below cypher, i want to check usign python, that if any value for L1ManagerLevel > 15
 
 """MATCH (u:User) 
 WHERE u.managerId IS NOT NULL 
