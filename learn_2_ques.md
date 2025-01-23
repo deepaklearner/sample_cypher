@@ -42,4 +42,4 @@ Citations:
 [7] https://python-forum.io/thread-36375.html
 
 
-https://www.academia.edu/43182935/Mastering_Pandas_Finance_Michael_Heydt?auto=download
+https://github.com/trenton3983/Learning_Pandas 
