@@ -15,5 +15,30 @@ Existing records warning check: FIRST_NAME, LAST_NAME, CX_PV_SOURCE, ManagerEmai
 
 existing records rejection columns: START_DATE, END_DATE, MANAGER_ID
 
+### Breakdown of the Columns:
+- **New Record Rejection Conditions**:
+  - `MANAGER_ID`: should exist in neo4j db.
+  - `FIRST_NAME`: should not be "DNE"
+  - `LAST_NAME`: should not be "DNE"
+  - `START_DATE`: Should not be "DNE"
+  - `END_DATE`: Should not be "DNE"
+  - `CX_PV_SOURCE`: should not be "DNE"
+
+- **New Record Warning Conditions**:
+  - `ManagerEmail`: Should exist in neo4j db.
+
+- **Existing Record Rejection Conditions**:
+  - `MANAGER_ID`: should exist in neo4j db.
+  - `START_DATE`: Should not be "DNE"
+  - `END_DATE`: Should not be "DNE"
+  
+- **Existing Record Warning Conditions**:
+  - `ManagerEmail`: should exist in neo4j db.
+  - `FIRST_NAME`, `LAST_NAME`: These fields should not be empty.
+  - `CX_PV_SOURCE`: Must not be empty.
+  - `ManagerEmail`: Should be a valid email format.
+
+
+
 Suggest me approach.
 
