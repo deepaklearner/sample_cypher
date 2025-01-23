@@ -24,13 +24,13 @@ existing records rejection columns: START_DATE, END_DATE, MANAGER_ID
   - `END_DATE`: Should not be "DNE"
   - `CXPVSOURCE`: should not be "DNE"
 
-- **New Record Warning Conditions**:
-  - `ManagerEmail`: Should exist in neo4j db.
-
 - **Existing Record Rejection Conditions**:
   - `MANAGER_ID`: should exist in neo4j db.
   - `START_DATE`: Should not be "DNE"
   - `END_DATE`: Should not be "DNE"
+  
+- **New Record Warning Conditions**:
+  - `ManagerEmail`: Should exist in neo4j db.
   
 - **Existing Record Warning Conditions**:
   - `ManagerEmail`: should exist in neo4j db.
