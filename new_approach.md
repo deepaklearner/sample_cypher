@@ -37,7 +37,9 @@ existing records rejection columns: START_DATE, END_DATE, MANAGER_ID
   - `FIRST_NAME`, `LAST_NAME`: should not be "DNE"
   - `CXPVSOURCE`: Must not be empty.
 
-
+rename the process_df as df, rejected_df as rejected_data_vendors, warned_data_vendors
+i dont need warnings_list separately.
+Append Reject_Warn_Reason separated with comma. Also, mention if its a new record or existing record.
 
 Suggest me approach.
 
