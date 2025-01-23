@@ -47,5 +47,7 @@ v1.5
 First check for rejection, if the record not rejected then check for warning. 
 If record is rejected and no need to check for warning.
 
+v1.6 All the rejected records need to be removed from df in the end.
+
 Suggest me approach.
 
