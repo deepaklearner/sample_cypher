@@ -40,3 +40,6 @@ Citations:
 [5] https://www.reddit.com/r/learnpython/comments/10gaaac/what_are_some_very_uptodate_books_courses_on/
 [6] https://www.manning.com/books/pandas-in-action
 [7] https://python-forum.io/thread-36375.html
+
+
+https://www.academia.edu/43182935/Mastering_Pandas_Finance_Michael_Heydt?auto=download
