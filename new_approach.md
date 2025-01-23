@@ -49,6 +49,7 @@ If record is rejected and no need to check for warning.
 
 v1.6 All the rejected records need to be removed from df in the end.
 v1.7 should i initialize Reject_Warn_Reason column?
-v1.8 Reject_Warn_Reason column should be present in rejected_data_vendors_df and warned_data_vendors_df
+v1.8 Reject_Warn_Reason column should be present in 
+v1.9 return the same columns as of df for rejected_data_vendors_df and warned_data_vendors_df
 Suggest me approach.
 
