@@ -41,7 +41,7 @@ rename the process_df as df, rejected_df as rejected_data_vendors, warned_data_v
 i dont need warnings_list separately.
 Append Reject_Warn_Reason separated with comma. Also, mention if its a new record or existing record.
 
-I want all the columns which are in df along with new column Reject_Warn_Reason in rejected_data_vendors and warned_data_vendors
+v1.4 I want all the columns which are in df along with new column Reject_Warn_Reason in rejected_data_vendors and warned_data_vendors
 
 Suggest me approach.
 
