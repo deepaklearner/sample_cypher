@@ -12,3 +12,6 @@ User-[:HAS_ATTRIBUTE]->(di:DepartmentInfo)-[:PREVIOUS]->(di2:DepartmentInfo)
 Suggest me simple ideas for recommendation system use cases.
 
 2.tell me details about """User Role/Access Recommendation"""
+
+3. recommendation ideas using iam system data using python and neo4j
+    Idea: Recommend roles or permissions to a user based on the roles/permissions of similar users.
