@@ -15,3 +15,4 @@ Suggest me simple ideas for recommendation system use cases.
 
 3. recommendation ideas using iam system data using python and neo4j
     Idea: Recommend roles or permissions to a user based on the roles/permissions of similar users.
+4. i dont have activity data captured in neo4j. Suggest some more ideas
