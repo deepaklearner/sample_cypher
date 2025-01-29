@@ -15,6 +15,9 @@ changeReasonCode, date, eventID, jobResponsibilitiesChanged, startDate
 c. The properties for User node are:
 acquisionCode, eligibilityCode, employeeNumber, globalID, managerid, transactionType
 
+d. The properties for UserAccount are:
+accountType, targetSystem, userName
+
 1. Make use of these nodes relationship and suggest some good and easy to implement usecase to show good use of
 graph db 
 
