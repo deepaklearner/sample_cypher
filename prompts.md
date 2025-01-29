@@ -1,18 +1,20 @@
 1.I have IAM data in neo4j. Like below ndoes:
-User with labels such as Active, COntractor, Transfer etc and properties employeeNumber, managerid etc
-UserAccount with labels such as Enabled and properties targetSystem, accountType, PrimaryAuthSystem etc
-DepartmentInfo properties such as date, eventID etc
 
 And the relationships such as:
 User-[:HAS_ATTRIBUTE]->UserAccount
 User-[:HAS_ATTRIBUTE]->(di:DepartmentInfo)-[:CURRENT]->(d1:Department)
                         di->[:PREVIOUS]->(d2:Department)
                         di->[:HAS_DEPARTMENT]->(d)
-                        
-Suggest me simple ideas for recommendation system use cases.
 
-2.tell me details about """User Role/Access Recommendation"""
+1. The properties for Department node are:
+department, departmentCode, deptLevel
 
-3. recommendation ideas using iam system data using python and neo4j
-    Idea: Recommend roles or permissions to a user based on the roles/permissions of similar users.
-4. i dont have activity data captured in neo4j. Suggest some more ideas
+2. The properties for DepartmentInfo node are:
+changeReasonCode, date, eventID, jobResponsibilitiesChanged, startDate
+
+3. The properties for User node are:
+acquisionCode, eligibilityCode, employeeNumber, globalID, managerid, transactionType
+
+Make use of these nodes relationship and suggest some good and easy to implement usecase to show good use of
+graph db 
+
