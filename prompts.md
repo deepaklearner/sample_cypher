@@ -5,8 +5,8 @@ DepartmentInfo properties such as date, eventID etc
 
 And the relationships such as:
 User-[:HAS_ATTRIBUTE]->UserAccount
-User-[:HAS_ATTRIBUTE]->(di:DepartmentInfo)-[:PREVIOUS]->(di2:DepartmentInfo)
-                        di->[:CURRENT]->(d:Department)
+User-[:HAS_ATTRIBUTE]->(di:DepartmentInfo)-[:CURRENT]->(d1:Department)
+                        di->[:PREVIOUS]->(d2:Department)
                         di->[:HAS_DEPARTMENT]->(d)
                         
 Suggest me simple ideas for recommendation system use cases.
