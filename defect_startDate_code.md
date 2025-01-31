@@ -42,7 +42,7 @@ def transform_vendor_raw_data(df):
 
     # Apply date cleaner while preserving original format
     df['date_current'] = date_cleaner(df, colname='date_current')
-    df['date_current'] = df['date_current'].astype(str).replace('NaT', 'DNE')
+    df['date_current'] = df['date_current'].astype(str).replace(np.nan, 'DNE')
 
     # Maintain original format for startDate without converting
     df['startDate'] = np.where(condition, df['START_DATE_upd'], future_date)
@@ -52,7 +52,7 @@ def transform_vendor_raw_data(df):
 
     # Clean startDate column and keep format intact
     df['startDate'] = date_cleaner(df, colname='startDate')
-    df['startDate'] = df['startDate'].astype(str).replace('NaT', 'DNE').replace(future_date, 'DNE')
+    df['startDate'] = df['startDate'].astype(str).replace(np.nan, 'DNE').replace(future_date, 'DNE')
 
     logging.info(f"deepak2 df: \n{df.to_string()}")
 
