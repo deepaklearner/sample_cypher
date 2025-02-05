@@ -15,6 +15,6 @@ How should i plan? Should i delete everything and write fresh in batches?
 2.
 Requirement to code in python """
 
-Update table glide iamidsidentities. Find the user id (resourceid), and update only those records and only specific columns"""
+Update table glide.iamidsidentities in mysql db. Find the record based on primary key user id (resourceid), and update only those records and only specific columns"""
 
 
