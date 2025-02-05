@@ -15,6 +15,10 @@ How should i plan? Should i delete everything and write fresh in batches?
 2.
 Requirement to code in python """
 
-Update table glide.iamidsidentities in mysql db. Find the record based on primary key user id (resourceid), and update only those records and only specific columns"""
+Update table glide.iamidsidentities in mysql db. Find the record based on primary key user id (resourceid), and update only those records and only columns that i have in my dataframe. Leave the other columns as it is with no change in data.
+"""
+2.1 i have huge data .7 million
+2.2 can we avoid iterrows
+
 
 

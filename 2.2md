@@ -1,0 +1,117 @@
+Yes, we can avoid using `iterrows()` for efficiency. While `iterrows()` is easy to use, it is not the most efficient way to iterate over rows in a DataFrame, especially for large datasets, because it operates row by row, which can be slow.
+
+Instead, we can take advantage of vectorized operations in Pandas and batch processing directly with Numpy arrays. This will allow us to prepare the data for the `UPDATE` statement more efficiently.
+
+### Revised Approach without `iterrows()`
+
+Here’s an optimized approach where we avoid using `iterrows()`:
+
+1. **Use Numpy to prepare data efficiently**: Instead of iterating through rows, we can use Numpy arrays to select the columns that need to be updated and then prepare the data in one go.
+
+2. **Batch Processing**: We'll process the data in chunks, which is important when working with large datasets.
+
+### Updated Code:
+
+```python
+import pandas as pd
+import pymysql
+import numpy as np
+
+# Connect to MySQL using pymysql
+conn = pymysql.connect(
+    host='localhost',
+    user='username',
+    password='password',
+    database='yourdb'
+)
+
+cursor = conn.cursor()
+
+# Step 1: Get the column names from your MySQL table (ensure the correct order)
+cursor.execute("DESCRIBE glide.iamidsidentities;")
+table_columns = [column[0] for column in cursor.fetchall()]
+
+# Step 2: Create a column mapping to handle the name mismatch (ManagerLevel → level)
+column_mapping = {
+    'ManagerLevel': 'level',  # Map 'ManagerLevel' in DataFrame to 'level' in MySQL
+}
+
+# Assuming df is already loaded, you would still need to rename columns
+df.rename(columns=column_mapping, inplace=True)
+
+# Step 3: Check if the DataFrame columns exist in the MySQL table
+df_columns = df.columns.tolist()
+valid_columns = [col for col in df_columns if col in table_columns]
+
+# Step 4: Create the SQL UPDATE statement template
+update_query_template = """
+    UPDATE glide.iamidsidentities 
+    SET {set_clause} 
+    WHERE resourceid = %s;
+"""
+
+# Prepare the set clause based on valid columns in the DataFrame
+set_clause = ', '.join([f"{col} = %s" for col in valid_columns])
+
+# Step 5: Update records in batches
+batch_size = 10000  # Adjust batch size for large data, based on server capabilities
+batch_counter = 0
+
+# Prepare Numpy arrays for faster operations
+valid_columns_idx = [df.columns.get_loc(col) for col in valid_columns]  # Get column indices for valid columns
+resourceid_idx = df.columns.get_loc('resourceid')  # Assuming 'resourceid' is in the DataFrame
+
+# Process the data in chunks from the DataFrame (streaming approach)
+for start in range(0, len(df), batch_size):
+    end = start + batch_size
+    batch = df.iloc[start:end]
+
+    # Prepare the data to update, adding resourceid as the last element in each tuple
+    batch_values = batch.values  # Convert the DataFrame chunk into a Numpy array
+
+    # Select the relevant data for valid columns (ignoring the columns that are not valid)
+    data_to_update = []
+    for row in batch_values:
+        row_data = [row[idx] for idx in valid_columns_idx]
+        resource_id = row[resourceid_idx]  # Get the resourceid for the WHERE clause
+        data_to_update.append(tuple(row_data + [resource_id]))
+
+    # Execute the update query for the current batch
+    try:
+        for data in data_to_update:
+            update_query = update_query_template.format(set_clause=set_clause)
+            cursor.execute(update_query, data)
+        conn.commit()  # Commit after processing the batch
+        batch_counter += 1
+        print(f"Processed batch {batch_counter}")
+    except Exception as e:
+        print(f"Error processing batch {batch_counter}: {e}")
+        conn.rollback()  # Rollback if something goes wrong with the batch
+
+# Close the cursor and connection after processing all batches
+cursor.close()
+conn.close()
+
+print(f"Finished processing all {len(df)} records.")
+```
+
+### Key Improvements:
+
+1. **Avoiding `iterrows()`**: 
+   - We avoid `iterrows()` by directly converting the DataFrame chunk (`batch`) into a Numpy array with `batch.values`. This is far more efficient when working with large datasets.
+   
+2. **Column Indexing**: 
+   - We use `df.columns.get_loc(col)` to get the index of the columns in the DataFrame, which allows us to directly access the relevant values in each row without using the slower `iterrows()` method.
+
+3. **Batching with Numpy**:
+   - By using Numpy’s efficient indexing, we can quickly extract the relevant columns (valid columns and `resourceid`) for each row in the batch.
+
+4. **Memory Efficiency**:
+   - The batch is processed in chunks (of size `batch_size`), ensuring that we don’t run out of memory, even with 7 million rows of data.
+
+### Additional Optimizations:
+- **Parallel Execution**: If your MySQL server can handle multiple connections, you might consider running multiple batches in parallel (e.g., using `concurrent.futures` or threading).
+  
+- **Database Load Tuning**: Ensure your MySQL configuration is optimized for large batch updates. This includes increasing `innodb_buffer_pool_size` and possibly turning off some non-critical indexes during bulk updates (then rebuilding them afterward).
+
+This method should be much more efficient than using `iterrows()` and should handle 7 million rows without running into memory issues or significant slowdowns.
