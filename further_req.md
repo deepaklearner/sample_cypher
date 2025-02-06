@@ -25,4 +25,7 @@ Update table glide.iamidsidentities in mysql db. Find the record based on primar
 
 4. In 1.2 solution, I want to separate the delete data from table logic in a separate function bkp_tbl_n_delete_data. Take backup in table glidesupervisorhierachy_backup. I want to retain the data for 7 days only in backup table. Make use of column CreateTimestamp.
 
+4.1 How to backup .7 million rows.
+
+
 
