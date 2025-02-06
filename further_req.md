@@ -20,5 +20,6 @@ Update table glide.iamidsidentities in mysql db. Find the record based on primar
 2.1 i have huge data .7 million
 2.2 can we avoid iterrows
 3. If the resourceid is present in df but not present in iamidsidentities. print those resourceid in form of a list in the log for the batch.
+3.1 Give me full code
 
 
