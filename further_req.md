@@ -64,3 +64,4 @@ Populate the value from python and pass it to db.
 6.1 How can i make my code easy to maintain. 
 6.2 where is executemany?
 6.3 where is rollback in update_data_to_identities
+6.4 where is logic for missing_resource_ids
