@@ -62,3 +62,4 @@ Populate the value from python and pass it to db.
 
 6. mysql db operations code 
 6.1 How can i make my code easy to maintain. 
+6.2 where is executemany?
