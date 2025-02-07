@@ -26,6 +26,10 @@ Update table glide.iamidsidentities in mysql db. Find the record based on primar
 4. In 1.2 solution, I want to separate the delete data from table logic in a separate function bkp_tbl_n_delete_data. Take backup in table glidesupervisorhierachy_backup. I want to retain the data for 7 days only in backup table. Make use of column CreateTimestamp.
 
 4.1 How to backup .7 million rows.
+4.2 when writing data to backup table. also add a new column BackupTimestamp.
+The column BackupTimestamp is not present in original table. This will exist only in backup table.
+Populate the value from python and pass it to db.
 
 
-
+5. This is my code
+5.1 How can i make my code easy to maintain. 
