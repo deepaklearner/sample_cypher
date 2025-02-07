@@ -65,3 +65,7 @@ Populate the value from python and pass it to db.
 6.2 where is executemany?
 6.3 where is rollback in update_data_to_identities
 6.4 where is logic for missing_resource_ids
+
+6.5 i am getting error in this line """ data_to_update = [(tuple([row[idx] for idx in req_columns] + [row['resourceid']])) for row in batch.values]""" error fetching data: only intezers, slices (':', ellipses, numpy.newaxis, None and or boolean arrays are valid indices
+
+
