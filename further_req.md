@@ -68,4 +68,6 @@ Populate the value from python and pass it to db.
 
 6.5 i am getting error in this line """ data_to_update = [(tuple([row[idx] for idx in req_columns] + [row['resourceid']])) for row in batch.values]""" error fetching data: only intezers, slices (':', ellipses, numpy.newaxis, None and or boolean arrays are valid indices
 
+7. code for identities update
+7.1. How can i make my code easy to maintain. 
 
