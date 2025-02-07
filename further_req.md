@@ -58,4 +58,7 @@ Populate the value from python and pass it to db.
             logging.info("Backup failed, skipping deletion of old data")
             flag_success = False"
 
-            
+5.3. where is "iam_data_export_glide.close_connections()"
+
+6. mysql db operations code 
+6.1 How can i make my code easy to maintain. 
