@@ -33,3 +33,29 @@ Populate the value from python and pass it to db.
 
 5. This is my code
 5.1 How can i make my code easy to maintain. 
+5.2 gpt missed to add below code:
+"with open(report_output_file_with_timestamp, "w", newline='') as csvfile:
+    writer = csv.writer(csvfile)
+    header_written = False
+
+    if iam_graph_operations:
+        backup_success = iam_data_export_glide.backup_table_data(
+            table_name="glide.glidesupervisorhierarchy",
+            backup_table_name="glide.glidesupervisorhierarchy_backup"
+        )
+        
+        if backup_success:
+            iam_data_export_glide.del_7days_old_data(
+                backup_table_name="glide.glidesupervisorhierarchy_backup",
+                chunk_size=chunk_size
+            )
+            iam_data_export_glide.del_data_frm_table(
+                table_name="glide.glidesupervisorhierarchy",
+                chunk_size=chunk_size
+            )
+            flag_success = True
+        else:
+            logging.info("Backup failed, skipping deletion of old data")
+            flag_success = False"
+
+            
