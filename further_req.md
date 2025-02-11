@@ -73,3 +73,4 @@ Populate the value from python and pass it to db.
 
 8. I am running function update_data_to_identities on .7 million rows. And its running very slow. How can we optimize it. Also, there are lot of records which are not missing. so missing_resource_ids dataframe is very large. Please suggest optimize ideas.
 
+8.1 by deepseek
