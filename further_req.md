@@ -78,3 +78,4 @@ Populate the value from python and pass it to db.
 
 9. code of populate supervisor hierachy
 9.1 How can i make my code easy to maintain. 
+9.2 can we move match_user_qry  and match_user_without_mngr_qry  also to helper function
