@@ -71,3 +71,5 @@ Populate the value from python and pass it to db.
 7. code for identities update
 7.1. How can i make my code easy to maintain. 
 
+8. I am running function update_data_to_identities on .7 million rows. And its running very slow. How can we optimize it. Also, there are lot of records which are not missing. so missing_resource_ids dataframe is very large. Please suggest optimize ideas.
+
