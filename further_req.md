@@ -75,3 +75,5 @@ Populate the value from python and pass it to db.
 
 8.1 by deepseek
 8.2 can you please rename existing_resource_ids with glide_resource_ids and all_resource_ids to graphdb_resource_ids
+
+9. code of populate supervisor hierachy
