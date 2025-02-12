@@ -81,6 +81,10 @@ Populate the value from python and pass it to db.
 9.2 can we move match_user_qry  and match_user_without_mngr_qry  also to helper function
 9.3 or better i am thinking if we can move them to a yaml config file. what do you suggest
 
-10.
+10. in 8.2 code
 i have a mysql table identities, it has employeeid, L1Managerid, L2Managerid upto L15Managerid... There is another pandas dataframe. I have to update multiple columns in table identities, if there is a change in L1Managerid, L2Managerid upto L15Managerid columns. the primary key is employeeid. The total number of records is 1 million. As of now I am updating the whole table. is there any better optimized way 
+
+10.1 
+in 8.2 code
+i have a mysql table identities, it has resourceid with employeeid, L1Managerid, L2Managerid upto L15Managerid... There is another pandas dataframe. I have to update multiple columns in table identities, if there is a change in L1Managerid, L2Managerid upto L15Managerid columns. the primary key is employeeid. The total number of records is 1 million. I want to identify the rows which are eligible for update by comparing employeeid, L1Managerid, L2Managerid upto L15Managerid etc
 
