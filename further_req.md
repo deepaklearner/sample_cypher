@@ -92,3 +92,7 @@ i have a mysql table identities, it has resourceid with employeeid, L1Managerid,
 11.1 
 in 11 code
 i have a mysql table identities, it has resourceid with employeeid, L1Managerid, L2Managerid upto L15Managerid... There is another pandas dataframe. I have to update multiple columns in table identities, if there is a change in L1Managerid, L2Managerid upto L15Managerid columns. the primary key is employeeid. The total number of records is 1 million. I want to identify the rows which are eligible for update by comparing employeeid, L1Managerid, L2Managerid upto L15Managerid etc
+
+11.2 can we create a dictionary for new_managers as well like current_manager_data. I think that would be safer approach
+
+aaa
