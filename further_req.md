@@ -95,4 +95,7 @@ i have a mysql table identities, it has resourceid with employeeid, L1Managerid,
 
 11.2 can we create a dictionary for new_managers as well like current_manager_data. I think that would be safer approach
 
-aaa
+12. code with ques
+once we identify the rows to update for change is manager data for any of the columns, we will update all the columns in req_columns as mentioned in my question for the source dataframe into the table 
+
+12.1 ans:
