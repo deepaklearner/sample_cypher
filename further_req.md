@@ -102,4 +102,6 @@ in glide database the column employeeid column is named as resourceid.
 also to avoid confusion, please rename existing_data_query to glide_data_query and others similarly.
 
 In df, we have EmployeeID.
+
+we also have to log missing EmployeeID in glide database.
 12.1 ans:
