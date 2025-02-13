@@ -98,4 +98,8 @@ i have a mysql table identities, it has resourceid with employeeid, L1Managerid,
 12. code with ques
 once we identify the rows to update for change is manager data for any of the columns, we will update all the columns in req_columns as mentioned in my question for the source dataframe into the table 
 
+in glide database the column employeeid column is named as resourceid.
+also to avoid confusion, please rename existing_data_query to glide_data_query and others similarly.
+
+In df, we have EmployeeID.
 12.1 ans:
