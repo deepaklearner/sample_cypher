@@ -104,4 +104,7 @@ also to avoid confusion, please rename existing_data_query to glide_data_query a
 In df, we have EmployeeID.
 
 we also have to log missing EmployeeID in glide database.
+
+got error here ... Error updating data: Item wrong length 15 instead of 4 at this line """change_mask = merged_df[[f'{col}_new' != f'{col}_old' for col in manager_columns]].any(axis=1)"""
+
 12.1 ans:
