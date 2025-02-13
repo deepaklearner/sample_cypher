@@ -113,5 +113,7 @@ getting error at this line """data_to_update = [
             tuple([row[f'{col}_new'] for col in req_columns] + [row['resourceid']]) 
             for _, row in changed_df.iterrows()
         ]""" can you remove the columns from changed_df having suffix "_old" and also rename the ones having suffix _new. remove _new 
-        
+
+
+i dont want to take risk... can we do this specifically for ManagerID_old and Manager_new. I dont want to risk other columns if they have suffix _old or _new
 12.1 ans:
