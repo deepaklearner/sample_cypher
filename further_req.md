@@ -117,3 +117,5 @@ getting error at this line """data_to_update = [
 
 i dont want to take risk... can we do this specifically for ManagerID_old and Manager_new. I dont want to risk other columns if they have suffix _old or _new
 12.1 ans:
+
+13. How to parametrize the number of ManagerID. i dont want to hardcode L1 to L15
