@@ -119,3 +119,5 @@ i dont want to take risk... can we do this specifically for ManagerID_old and Ma
 12.1 ans:
 
 13. How to parametrize the number of ManagerID. i dont want to hardcode L1 to L15
+
+14. How can i make my code easy to maintain. 
