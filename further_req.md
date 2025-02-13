@@ -108,4 +108,10 @@ we also have to log missing EmployeeID in glide database.
 got error here ... Error updating data: Item wrong length 15 instead of 4 at this line """change_mask = merged_df[[f'{col}_new' != f'{col}_old' for col in manager_columns]].any(axis=1)"""
 
 at line """req_columns = df.columns.tolist()  # Assuming all columns in df are required for update""" update column name "EmployeeID" to "resourceid" to match with column name in glide database 
+
+getting error at this line """data_to_update = [
+            tuple([row[f'{col}_new'] for col in req_columns] + [row['resourceid']]) 
+            for _, row in changed_df.iterrows()
+        ]""" can you remove the columns from changed_df having suffix "_old" and also rename the ones having suffix _new. remove _new 
+        
 12.1 ans:
