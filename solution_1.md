@@ -95,3 +95,53 @@ WHERE
 - The result will be similar to the `computed_concat_attr_Name` column logic in your Python code but implemented entirely in SQL.
 
 Let me know if you need further clarification or adjustments!
+
+QQQ. what is CONCAT_WS
+
+`CONCAT_WS` is a function used in SQL to concatenate multiple string values with a specified separator. The "WS" stands for "With Separator," meaning that you can define a separator (such as a space, comma, etc.) to be inserted between the values as they are concatenated.
+
+### Syntax:
+```sql
+CONCAT_WS(separator, value1, value2, ..., valueN)
+```
+
+- **separator**: The string that will be placed between the concatenated values (e.g., a space `' '`, a comma `','`, etc.).
+- **value1, value2, ..., valueN**: The columns or string values that you want to concatenate.
+
+### Key Features:
+1. **Separator**: The separator is placed between all the values being concatenated, except for the first one.
+2. **Skipping NULLs**: If any of the values are `NULL`, they are automatically ignored in the concatenation. Only non-`NULL` values are included in the final result.
+
+### Example:
+
+Let’s say you have a table with the following values:
+
+| first_name | middle_name | last_name  |
+|------------|-------------|------------|
+| John       | Michael     | Doe        |
+| Alice      | NULL        | Smith      |
+
+Using `CONCAT_WS`:
+
+```sql
+SELECT CONCAT_WS(' ', first_name, middle_name, last_name) AS full_name
+FROM your_table;
+```
+
+This would produce:
+
+| full_name         |
+|-------------------|
+| John Michael Doe  |
+| Alice Smith       |
+
+### Explanation:
+- The separator is a space (`' '`), which is inserted between the values.
+- `NULL` values (like `middle_name` for Alice) are ignored.
+- So, for Alice, `NULL` is skipped, and the result is just `"Alice Smith"`.
+
+### Why use `CONCAT_WS` over `CONCAT`?
+- **`CONCAT`** would concatenate all values regardless of whether they are `NULL` or not, meaning that if any value is `NULL`, it would result in a `NULL` output for the entire expression.
+- **`CONCAT_WS`** handles `NULL` values gracefully, ignoring them instead of causing the entire concatenation to fail.
+
+In summary, `CONCAT_WS` is a very useful function when you need to concatenate multiple strings with a separator and want to skip over any `NULL` values in the process.
