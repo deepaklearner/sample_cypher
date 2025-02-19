@@ -1,56 +1,67 @@
-Q. I want to implement same logic in this sql query.
-in sql the data will never be DNE it can be null.
+Q. i want to apply the logic mentioned in this python code to the sql query python code 
 
-Thank you for the clarification! If the data in SQL is never `'DNE'` but can be `NULL`, we can adjust the logic accordingly. The goal is to concatenate the address components and ensure that `NULL` values are properly handled, replacing them with `'DNE'` when necessary. Here's the revised SQL query based on your explanation:
+To adapt the Python logic to SQL, we want to follow the same approach: 
+
+1. Concatenate address fields, ensuring that `DNE` (or equivalent) values are handled by replacing or omitting them.
+2. Only include non-null, non-empty values when concatenating.
+3. If the concatenated result is empty (after removing `DNE` values), replace it with `DNE`.
+
+### Here’s how we can apply this logic in SQL:
 
 ```sql
 CASE 
     WHEN employeetype IN ('G', 'L') THEN 
         COALESCE(NULLIF(CONCAT_WS(' ', 
-                                  NULLIF(WorkAddressLine1, NULL), 
-                                  NULLIF(WorkAddressLine2, NULL),
-                                  NULLIF(WorkCity, NULL),
-                                  NULLIF(WorkState, NULL),
-                                  NULLIF(PostalCode, NULL),
-                                  NULLIF(WorkCountryCode, NULL)), ''), 'DNE')
+            NULLIF(NULLIF(WorkAddressLine1, 'DNE'), ''), 
+            NULLIF(NULLIF(WorkAddressLine2, 'DNE'), ''), 
+            NULLIF(NULLIF(WorkCity, 'DNE'), ''), 
+            NULLIF(NULLIF(WorkState, 'DNE'), ''), 
+            NULLIF(NULLIF(PostalCode, 'DNE'), ''), 
+            NULLIF(NULLIF(WorkCountryCode, 'DNE'), '')
+        ), ''), 'DNE')
     ELSE 
         COALESCE(FullWorkAddress, 
                  NULLIF(CONCAT_WS(' ', 
-                                  NULLIF(WorkAddressLine1, NULL), 
-                                  NULLIF(WorkCity, NULL), 
-                                  NULLIF(WorkState, NULL), 
-                                  NULLIF(PostalCode, NULL), 
-                                  NULLIF(WorkCountryCode, NULL)), ''), 'DNE') 
+                    NULLIF(NULLIF(WorkAddressLine1, 'DNE'), ''), 
+                    NULLIF(NULLIF(WorkCity, 'DNE'), ''), 
+                    NULLIF(NULLIF(WorkState, 'DNE'), ''), 
+                    NULLIF(NULLIF(PostalCode, 'DNE'), ''), 
+                    NULLIF(NULLIF(WorkCountryCode, 'DNE'), '')
+                 ), ''), 'DNE') 
 END AS concat_attr_WorkAddress,
 
 CASE 
     WHEN employeetype IN ('G', 'L') THEN 
         COALESCE(NULLIF(CONCAT_WS(' ', 
-                                  NULLIF(HomeAddress1, NULL), 
-                                  NULLIF(HomeAddress2, NULL),
-                                  NULLIF(HomeAddress3, NULL),
-                                  NULLIF(HomeAddress4, NULL),
-                                  NULLIF(HomeCity, NULL),
-                                  NULLIF(HomeState, NULL),
-                                  NULLIF(HomePostalCode, NULL),
-                                  NULLIF(HomeCountry, NULL)), ''), 'DNE')
+            NULLIF(NULLIF(HomeAddress1, 'DNE'), ''), 
+            NULLIF(NULLIF(HomeAddress2, 'DNE'), ''), 
+            NULLIF(NULLIF(HomeAddress3, 'DNE'), ''), 
+            NULLIF(NULLIF(HomeAddress4, 'DNE'), ''), 
+            NULLIF(NULLIF(HomeCity, 'DNE'), ''), 
+            NULLIF(NULLIF(HomeState, 'DNE'), ''), 
+            NULLIF(NULLIF(HomePostalCode, 'DNE'), ''), 
+            NULLIF(NULLIF(HomeCountry, 'DNE'), '')
+        ), ''), 'DNE')
     ELSE 
         COALESCE(FullHomeAddress, 
                  NULLIF(CONCAT_WS(' ', 
-                                  NULLIF(HomeAddress1, NULL), 
-                                  NULLIF(HomeCity, NULL), 
-                                  NULLIF(HomeState, NULL),
-                                  NULLIF(HomePostalCode, NULL),
-                                  NULLIF(HomeCountry, NULL)), ''), 'DNE') 
+                    NULLIF(NULLIF(HomeAddress1, 'DNE'), ''), 
+                    NULLIF(NULLIF(HomeCity, 'DNE'), ''), 
+                    NULLIF(NULLIF(HomeState, 'DNE'), ''), 
+                    NULLIF(NULLIF(HomePostalCode, 'DNE'), ''), 
+                    NULLIF(NULLIF(HomeCountry, 'DNE'), '')
+                 ), ''), 'DNE') 
 END AS concat_attr_HomeAddress
 ```
 
-### Changes made:
+### Breakdown of the SQL Logic:
 
-1. **`NULLIF(column, NULL)`**: Here, we replace any `NULL` values in the columns with `NULL`. This step is necessary to handle potential `NULL` values before concatenating them.
-   
-2. **`CONCAT_WS(' ', ...)`**: Concatenates the non-`NULL` values, just like before, and ensures that if all values are `NULL`, the result will be an empty string.
+- **`CONCAT_WS(' ', ...)`**: This concatenates multiple fields with a space between them. We use `CONCAT_WS` instead of `CONCAT` because it ignores any `NULL` values.
+  
+- **`NULLIF(<field>, 'DNE')`**: This checks if the field is equal to `'DNE'`, and if it is, it returns `NULL`. This is similar to the behavior in the Python code where `DNE` values are replaced by an empty string.
+  
+- **`COALESCE()`**: This function returns the first non-null value. We use it to return a valid concatenated address or `'DNE'` if the concatenated result is empty or null.
+  
+- **`NULLIF(..., '')`**: This checks if the result of the concatenation is an empty string and converts it to `NULL`. The `COALESCE` then ensures that `'DNE'` is returned if the result is `NULL`.
 
-3. **`COALESCE(..., 'DNE')`**: If the result of the concatenation is an empty string, `'DNE'` will be used as the fallback.
-
-In this version, we ensure that the `NULL` values are properly handled and replaced by `'DNE'` only when all parts of the address are `NULL` or when there is no address data to concatenate.
+This SQL code should replicate the logic in your Python code and handle the same cases for address concatenation and replacement of `'DNE'`.
