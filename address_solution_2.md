@@ -1,67 +1,76 @@
-Q. i want to apply the logic mentioned in this python code to the sql query python code 
+You're absolutely right to ask about the sequence!
 
-To adapt the Python logic to SQL, we want to follow the same approach: 
+In the Python code, you’re appending each component in a specific sequence for both work and home addresses:
 
-1. Concatenate address fields, ensuring that `DNE` (or equivalent) values are handled by replacing or omitting them.
-2. Only include non-null, non-empty values when concatenating.
-3. If the concatenated result is empty (after removing `DNE` values), replace it with `DNE`.
+1. `Street Address` + `Locality` + `Region` + `Postal Code` + `Country`
 
-### Here’s how we can apply this logic in SQL:
+However, the SQL code I provided earlier uses `CONCAT_WS` to concatenate address fields, but the sequence might not fully match what you had in Python.
+
+To align with the Python logic, where you concatenate each component in a specific order and append a comma (if the field isn't `'DNE'`), let's ensure the sequence is exactly as you want.
+
+Here is the corrected version:
+
+### Corrected SQL with Exact Sequence and Comma:
 
 ```sql
 CASE 
     WHEN employeetype IN ('G', 'L') THEN 
-        COALESCE(NULLIF(CONCAT_WS(' ', 
-            NULLIF(NULLIF(WorkAddressLine1, 'DNE'), ''), 
-            NULLIF(NULLIF(WorkAddressLine2, 'DNE'), ''), 
-            NULLIF(NULLIF(WorkCity, 'DNE'), ''), 
-            NULLIF(NULLIF(WorkState, 'DNE'), ''), 
-            NULLIF(NULLIF(PostalCode, 'DNE'), ''), 
-            NULLIF(NULLIF(WorkCountryCode, 'DNE'), '')
+        COALESCE(NULLIF(CONCAT_WS(', ', 
+            NULLIF(WorkAddressLine1, NULL), 
+            NULLIF(WorkAddressLine2, NULL), 
+            NULLIF(WorkCity, NULL), 
+            NULLIF(WorkState, NULL), 
+            NULLIF(PostalCode, NULL), 
+            NULLIF(WorkCountryCode, NULL)
         ), ''), 'DNE')
     ELSE 
         COALESCE(FullWorkAddress, 
-                 NULLIF(CONCAT_WS(' ', 
-                    NULLIF(NULLIF(WorkAddressLine1, 'DNE'), ''), 
-                    NULLIF(NULLIF(WorkCity, 'DNE'), ''), 
-                    NULLIF(NULLIF(WorkState, 'DNE'), ''), 
-                    NULLIF(NULLIF(PostalCode, 'DNE'), ''), 
-                    NULLIF(NULLIF(WorkCountryCode, 'DNE'), '')
+                 NULLIF(CONCAT_WS(', ', 
+                    NULLIF(WorkAddressLine1, NULL), 
+                    NULLIF(WorkAddressLine2, NULL), 
+                    NULLIF(WorkCity, NULL), 
+                    NULLIF(WorkState, NULL), 
+                    NULLIF(PostalCode, NULL), 
+                    NULLIF(WorkCountryCode, NULL)
                  ), ''), 'DNE') 
 END AS concat_attr_WorkAddress,
 
 CASE 
     WHEN employeetype IN ('G', 'L') THEN 
-        COALESCE(NULLIF(CONCAT_WS(' ', 
-            NULLIF(NULLIF(HomeAddress1, 'DNE'), ''), 
-            NULLIF(NULLIF(HomeAddress2, 'DNE'), ''), 
-            NULLIF(NULLIF(HomeAddress3, 'DNE'), ''), 
-            NULLIF(NULLIF(HomeAddress4, 'DNE'), ''), 
-            NULLIF(NULLIF(HomeCity, 'DNE'), ''), 
-            NULLIF(NULLIF(HomeState, 'DNE'), ''), 
-            NULLIF(NULLIF(HomePostalCode, 'DNE'), ''), 
-            NULLIF(NULLIF(HomeCountry, 'DNE'), '')
+        COALESCE(NULLIF(CONCAT_WS(', ', 
+            NULLIF(HomeAddress1, NULL), 
+            NULLIF(HomeAddress2, NULL), 
+            NULLIF(HomeAddress3, NULL), 
+            NULLIF(HomeAddress4, NULL), 
+            NULLIF(HomeCity, NULL), 
+            NULLIF(HomeState, NULL), 
+            NULLIF(HomePostalCode, NULL), 
+            NULLIF(HomeCountry, NULL)
         ), ''), 'DNE')
     ELSE 
         COALESCE(FullHomeAddress, 
-                 NULLIF(CONCAT_WS(' ', 
-                    NULLIF(NULLIF(HomeAddress1, 'DNE'), ''), 
-                    NULLIF(NULLIF(HomeCity, 'DNE'), ''), 
-                    NULLIF(NULLIF(HomeState, 'DNE'), ''), 
-                    NULLIF(NULLIF(HomePostalCode, 'DNE'), ''), 
-                    NULLIF(NULLIF(HomeCountry, 'DNE'), '')
+                 NULLIF(CONCAT_WS(', ', 
+                    NULLIF(HomeAddress1, NULL), 
+                    NULLIF(HomeAddress2, NULL), 
+                    NULLIF(HomeCity, NULL), 
+                    NULLIF(HomeState, NULL), 
+                    NULLIF(HomePostalCode, NULL), 
+                    NULLIF(HomeCountry, NULL)
                  ), ''), 'DNE') 
 END AS concat_attr_HomeAddress
 ```
 
-### Breakdown of the SQL Logic:
+### Key Considerations:
+1. **Sequence Matching**: The sequence in the SQL now matches the Python logic. 
+   - For **Work Address**, the fields are: `WorkAddressLine1`, `WorkAddressLine2`, `WorkCity`, `WorkState`, `PostalCode`, `WorkCountryCode`.
+   - For **Home Address**, the fields are: `HomeAddress1`, `HomeAddress2`, `HomeAddress3`, `HomeAddress4`, `HomeCity`, `HomeState`, `HomePostalCode`, `HomeCountry`.
+   
+2. **Commas**: Commas (`, `) will be inserted only between non-`NULL` fields.
 
-- **`CONCAT_WS(' ', ...)`**: This concatenates multiple fields with a space between them. We use `CONCAT_WS` instead of `CONCAT` because it ignores any `NULL` values.
-  
-- **`NULLIF(<field>, 'DNE')`**: This checks if the field is equal to `'DNE'`, and if it is, it returns `NULL`. This is similar to the behavior in the Python code where `DNE` values are replaced by an empty string.
-  
-- **`COALESCE()`**: This function returns the first non-null value. We use it to return a valid concatenated address or `'DNE'` if the concatenated result is empty or null.
-  
-- **`NULLIF(..., '')`**: This checks if the result of the concatenation is an empty string and converts it to `NULL`. The `COALESCE` then ensures that `'DNE'` is returned if the result is `NULL`.
+### Sequence Breakdown:
+- **Work Address Sequence**: 
+  - `WorkAddressLine1` → `WorkAddressLine2` → `WorkCity` → `WorkState` → `PostalCode` → `WorkCountryCode`
+- **Home Address Sequence**: 
+  - `HomeAddress1` → `HomeAddress2` → `HomeAddress3` → `HomeAddress4` → `HomeCity` → `HomeState` → `HomePostalCode` → `HomeCountry`
 
-This SQL code should replicate the logic in your Python code and handle the same cases for address concatenation and replacement of `'DNE'`.
+This should now reflect the correct order and structure of the Python logic, with commas separating address components where applicable. Let me know if anything else needs further adjustments!
