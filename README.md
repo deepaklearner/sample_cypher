@@ -9,3 +9,8 @@ if in mysql, cid is null then property cid should be removed else set
 then it not going beying below line:
 "WITH u, row
 WHERE u.aetnaresourceid <> row.AetnaResourceid OR u.cvsnetworkid <> row.cvsnetworkid OR u.cid <> row.cid" 
+
+6. If the value of u.aetnaresourceid initially not Null or empty and value row.AetnaResourceid having some other value then that is case for conversion.
+   In that case, we need to remove the relationship 
+r:HAS_AETNA_ID and delete the existing node aetna_identifier and create a new node aetna_identifier
+and create a new relationship r:HAS_AETNA_ID
