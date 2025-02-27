@@ -1,74 +1,78 @@
-You can use Cypher's `UNWIND` to iterate over the rows of your dataframe and perform the necessary updates. Here's a Cypher query that will compare the values from MySQL (which you will be passing as a parameter in the `UNWIND` clause) with those in Neo4j, and update the Neo4j node properties if there are differences:
+To address the problem you've outlined, you can follow the following Cypher approach. I'll break it down into the steps you mentioned:
 
-### Cypher Query:
+### 1. **Reading data from MySQL into a dataframe (`df`), then using `UNWIND` to read rows into Neo4j**:
+We'll assume that your MySQL dataframe (`df`) is being transferred into a list of rows. The list will have the columns `CVSResourceid`, `AetnaResourceid`, `cvsnetworkid`, and `cid`.
+
+### 2. **Updating existing nodes if there is any difference**:
+We will check if there are any existing nodes with values that differ from the data in the MySQL `df` and update them if necessary.
+
+### 3. **Create AetnaNetworkIdentifier node**:
+If no AetnaNetworkIdentifier node exists for the given `AetnaResourceid`, we'll create it.
+
+### 4. **Create relationship**:
+We will then create a relationship between `User` nodes and the newly created or existing `AetnaNetworkIdentifier`.
+
+Here's the Cypher query:
 
 ```cypher
-// UNWIND the rows from your DataFrame (e.g., cvs_resource_data is the list of maps you have from MySQL)
-UNWIND $cvs_resource_data AS row
-MATCH (u:User)
-WHERE u.employeeNumber = row.CVSResourceid
-MATCH (a:AetnaNetworkIdentifier)
-WHERE a.networkid = row.cvsnetworkid
-MATCH (u)-[r:HAS_AETNA_ID]->(a)
-WHERE r.assigned_date IS NOT NULL  // Optional, check if the relationship exists and has a timestamp
+// Assume df is already available as a list of rows with the required data
+UNWIND $data AS row
 
-// Update the User node properties if they are different from the data in MySQL
-SET 
-    u.employeeNumber = CASE WHEN u.employeeNumber <> row.CVSResourceid THEN row.CVSResourceid ELSE u.employeeNumber END,
-    u.aetnaresourceid = CASE WHEN u.aetnaresourceid <> row.AetnaResourceid THEN row.AetnaResourceid ELSE u.aetnaresourceid END,
-    u.cvsnetworkid = CASE WHEN u.cvsnetworkid <> row.cvsnetworkid THEN row.cvsnetworkid ELSE u.cvsnetworkid END,
-    u.cid = CASE WHEN u.cid <> row.cid THEN row.cid ELSE u.cid END,
+// Match the existing User node based on CVSResourceid (which maps to employeeNumber in Neo4j)
+MATCH (u:User {employeeNumber: row.CVSResourceid})
 
-// Update the AetnaNetworkIdentifier node properties if they are different from the data in MySQL
-    a.uid = CASE WHEN a.uid <> row.AetnaResourceid THEN row.AetnaResourceid ELSE a.uid END
+// Check if the properties of the User node need to be updated, and update if necessary
+WITH u, row
+WHERE u.aetnaresourceid <> row.AetnaResourceid OR u.cvsnetworkid <> row.cvsnetworkid OR u.cid <> row.cid
 
-// Optionally update the relationship properties as well if needed
-SET r.assigned_date = CASE WHEN r.assigned_date <> datetime() THEN datetime() ELSE r.assigned_date END;
+// Update the properties in the User node if there's any change
+SET u.aetnaresourceid = row.AetnaResourceid,
+    u.cvsnetworkid = row.cvsnetworkid,
+    u.cid = row.cid
+
+// Create the AetnaNetworkIdentifier node if it doesn't already exist
+MERGE (a:AetnaNetworkIdentifier {networkid: row.AetnaResourceid})
+SET a.uid = row.AetnaResourceid  // Or any other property you want to set for AetnaNetworkIdentifier
+
+// Create the relationship between the User and the AetnaNetworkIdentifier node
+MERGE (u)-[r:HAS_AETNA_ID]->(a)
+SET r.assigned_date = timestamp()  // Set the current timestamp for the assigned_date property
+
+RETURN u, a, r
 ```
 
 ### Explanation:
-- **UNWIND**: This takes a list of rows (in this case, the `cvs_resource_data` list) and makes them available to Cypher as individual rows.
-- **MATCH**: We match `User` and `AetnaNetworkIdentifier` nodes based on the `employeeNumber` (from `CVSResourceid`) and `networkid` (from `cvsnetworkid`), respectively.
-- **WHERE**: We use the `WHERE` clause to make sure that we're matching the correct nodes based on the incoming data.
-- **SET**: This part of the query updates the properties of the `User` and `AetnaNetworkIdentifier` nodes if there is a mismatch between the current value and the new value (`row`).
-    - For each property, we check if it differs from the value in the dataframe (`row`). If so, we update it with the new value; otherwise, it remains unchanged.
-- **Relationship property update**: If needed, you can also update properties on the `HAS_AETNA_ID` relationship, such as the `assigned_date`, which might be updated when there’s a change in the data.
 
-### Passing Parameters:
-You'll need to pass the `cvs_resource_data` list (your DataFrame rows) as a parameter. Assuming the data is available in the form of a list of maps in your Python code, you can pass it like this:
+1. **UNWIND `$data AS row`**:
+   - The data coming from MySQL (as a list of rows) is unpacked. `$data` should be the list you pass when running the Cypher query, and each row represents a single record (with values like `CVSResourceid`, `AetnaResourceid`, `cvsnetworkid`, and `cid`).
 
-```python
-# Example of passing the dataframe `df` as a list of dictionaries to the Cypher query
-cvs_resource_data = df.to_dict(orient='records')  # Convert DataFrame to list of dicts
+2. **MATCH (u:User {employeeNumber: row.CVSResourceid})**:
+   - We match the `User` node in Neo4j based on the `employeeNumber` property, which corresponds to `CVSResourceid` from MySQL.
 
-# Run the Cypher query (using Neo4j Python driver or another driver)
-query = """
-UNWIND $cvs_resource_data AS row
-MATCH (u:User)
-WHERE u.employeeNumber = row.CVSResourceid
-MATCH (a:AetnaNetworkIdentifier)
-WHERE a.networkid = row.cvsnetworkid
-MATCH (u)-[r:HAS_AETNA_ID]->(a)
-WHERE r.assigned_date IS NOT NULL
+3. **WHERE clause**:
+   - The `WHERE` clause checks if any of the properties (`aetnaresourceid`, `cvsnetworkid`, `cid`) in the `User` node are different from the data in `row`. If any are different, the update happens.
 
-SET 
-    u.employeeNumber = CASE WHEN u.employeeNumber <> row.CVSResourceid THEN row.CVSResourceid ELSE u.employeeNumber END,
-    u.aetnaresourceid = CASE WHEN u.aetnaresourceid <> row.AetnaResourceid THEN row.AetnaResourceid ELSE u.aetnaresourceid END,
-    u.cvsnetworkid = CASE WHEN u.cvsnetworkid <> row.cvsnetworkid THEN row.cvsnetworkid ELSE u.cvsnetworkid END,
-    u.cid = CASE WHEN u.cid <> row.cid THEN row.cid ELSE u.cid END,
+4. **SET u.aetnaresourceid = row.AetnaResourceid, u.cvsnetworkid = row.cvsnetworkid, u.cid = row.cid**:
+   - This updates the properties of the `User` node.
 
-    a.uid = CASE WHEN a.uid <> row.AetnaResourceid THEN row.AetnaResourceid ELSE a.uid END
+5. **MERGE (a:AetnaNetworkIdentifier {networkid: row.AetnaResourceid})**:
+   - This ensures that the `AetnaNetworkIdentifier` node exists. If it doesn't exist, it will be created with the given `networkid`.
 
-SET r.assigned_date = CASE WHEN r.assigned_date <> datetime() THEN datetime() ELSE r.assigned_date END;
-"""
+6. **SET a.uid = row.AetnaResourceid**:
+   - This sets the `uid` property of the `AetnaNetworkIdentifier` node. You can modify this based on your exact requirements.
 
-# Execute the query, passing the parameter
-session.run(query, cvs_resource_data=cvs_resource_data)
-```
+7. **MERGE (u)-[r:HAS_AETNA_ID]->(a)**:
+   - This ensures that there is a relationship of type `HAS_AETNA_ID` between the `User` and `AetnaNetworkIdentifier` nodes. If the relationship doesn't exist, it will be created.
+
+8. **SET r.assigned_date = timestamp()**:
+   - Sets the `assigned_date` property on the relationship to the current timestamp.
+
+9. **RETURN u, a, r**:
+   - This returns the `User`, `AetnaNetworkIdentifier`, and relationship for verification.
 
 ### Notes:
-- Ensure that the data from MySQL (`df`) is passed in the correct format for the Cypher query.
-- The `CASE WHEN` logic helps prevent unnecessary updates, which can improve performance.
-- If you don’t need to update `assigned_date`, you can omit that part or adjust the condition accordingly.
+- The `$data` placeholder is where you pass the list of rows from the MySQL dataframe.
+- The `timestamp()` function provides the current Unix timestamp, which is used to set the `assigned_date`.
+- The `MERGE` ensures that the `AetnaNetworkIdentifier` and the relationship are either created or matched based on the properties.
 
-This will allow you to efficiently update the Neo4j database with data from your MySQL source based on your mappings.
+Let me know if you'd like further clarifications!
