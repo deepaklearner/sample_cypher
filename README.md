@@ -4,3 +4,8 @@
 
 if in mysql, cid is null then property cid should be removed else set
 4. In Neo4j, if you set a property of a node or relationship to null, it effectively removes that property. 
+
+5. If the properties aetnaresourceid or cvsnetworkid or cid is not present in User node in neo4j,
+then it not going beying below line:
+"WITH u, row
+WHERE u.aetnaresourceid <> row.AetnaResourceid OR u.cvsnetworkid <> row.cvsnetworkid OR u.cid <> row.cid" 
