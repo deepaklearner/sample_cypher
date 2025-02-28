@@ -14,3 +14,6 @@ WHERE u.aetnaresourceid <> row.AetnaResourceid OR u.cvsnetworkid <> row.cvsnetwo
    In that case, we need to remove the relationship 
 r:HAS_AETNA_ID and delete the existing node aetna_identifier and create a new node aetna_identifier
 and create a new relationship r:HAS_AETNA_ID
+
+7. Adjusted the code with DNE
+8. 
