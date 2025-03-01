@@ -16,4 +16,4 @@ r:HAS_AETNA_ID and delete the existing node aetna_identifier and create a new no
 and create a new relationship r:HAS_AETNA_ID
 
 7. Adjusted the code with DNE
-8. 
+8. Just like AetnaNetworkIdentifier, add logic to cid as well to create node and relationship with User node.
