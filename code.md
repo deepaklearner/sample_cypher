@@ -1,4 +1,4 @@
-query aetna_identifier =  
+query aetna_identifier =  '''
 UNWIND $rows AS row  
 MATCH (usr:User {employeeNumber: row.CVSResourceid})  
 WITH usr, row  
@@ -44,3 +44,5 @@ SET usr.aetnaresourceid = CASE
                               ELSE usr.aetnaresourceid  
                           END,  
     usr.is_updated = 'Y'  
+
+'''
