@@ -1,0 +1,1 @@
+1. Can you optimize this cypher
