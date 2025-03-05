@@ -65,3 +65,9 @@ RETURN apoc.date.format(timestamp, "ms", "yyyy-MM-dd'T'HH:mm:ss'Z'") AS neo4j_da
 - ✅ **If you get raw data in Neo4j and need to fix it**, use APOC in Neo4j (Option 2).
 
 Let me know if you need any adjustments! 🚀
+
+without apoc:
+
+WITH "2025-0305T09:30:11" AS mysql_date
+WITH mysql_date[0..4] + '-' + mysql_date[5..7] + '-' + mysql_date[7..9] + 'T' + mysql_date[10..] + 'Z' AS neo4j_date
+RETURN neo4j_date;
