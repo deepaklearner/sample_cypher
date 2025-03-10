@@ -15,4 +15,6 @@ YIELD committedOperations"""
 
 My code:""" """
 
-7.1. 
+7.1.  i dont need reassigned_date
+8. wrapping in FOREACH
+    
