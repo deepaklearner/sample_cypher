@@ -3,4 +3,4 @@
 3. Just copied new latest code
 4. In case of change in networkid for AetnaNetworkIdenfier node. Change the previous one relationship between AetnaNetworkIdentifier and AetnaNetworkIdenfier from HAS_AETNA_ID to HAD_AETNA_ID.
 
-We also need to remove CURRENT relationship.. why did you removed that logic?
+5. Also remove the property networkid from the old AetnaNetworkIdentifier node
