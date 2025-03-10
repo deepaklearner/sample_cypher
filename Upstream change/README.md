@@ -5,3 +5,12 @@
 
 5. Also remove the property networkid from the old AetnaNetworkIdentifier node
 6. I want to retain the original value of assigned_date property in HAS_AETNA_ID in HAD_AETNA_ID as assigned_date and the new value as reassigned_date
+
+7.
+can we use below to rename HAS_AETNA_ID to HAD_AETNA_ID and retaining the properties:
+Sample: """MATCH(u:User{employeeNumber:'128792'})-[rel]-(we:AetnaIdentifier
+WITH collect(rel) AS rels, u, rel, we)
+apoc.refactor.rename.type("HAS_AETNA_ID", "HAD_AETNA_ID", rels)
+YIELD committedOperations"""
+
+My code:""" """
