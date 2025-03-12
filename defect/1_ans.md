@@ -1,30 +1,31 @@
 SELECT DISTINCT 
     CVSResourceid,
     CONCAT_WS(' ',
-        nullif(nameprefix, ''),
-        nullif(FirstName, ''),
+        nullif(TRIM(nameprefix), ''),
+        nullif(TRIM(FirstName), ''),
         nullif(LEFT(TRIM(MiddleName), 1), ''),
-        nullif(LastName, ''),
-        CASE 
-            WHEN preferredSuffix != '' THEN preferredSuffix
-            ELSE TRIM(SUBSTRING_INDEX(lastnameSuffix, ' ', -1))  -- Extract the last part of lastnameSuffix
-        END,
+        nullif(TRIM(LastName), ''),
+        -- Modified honorificSuffix logic to match Python
+        CASE
+            WHEN TRIM(preferredSuffix) != 'DNE' THEN TRIM(preferredSuffix)
+            ELSE COALESCE(NULLIF(TRIM(lastnameSuffix), ''), '')
+        END
     ) AS computed_concat_attr_Name
-FROM glide.glide_sdp_sensitive_dataview_hierarchy
+FROM glide.glide_sdp_sensitive_dataview_hierarchy;
 
-
-Solution with coalese
+Using coalese:
 
 SELECT DISTINCT 
     CVSResourceid,
     CONCAT_WS(' ',
-        COALESCE(NULLIF(nameprefix, ''), ''),
-        COALESCE(NULLIF(FirstName, ''), ''),
-        COALESCE(NULLIF(LEFT(TRIM(MiddleName), 1), ''), ''),
-        COALESCE(NULLIF(LastName, ''), ''),
+        nullif(TRIM(nameprefix), ''),
+        nullif(TRIM(FirstName), ''),
+        nullif(LEFT(TRIM(MiddleName), 1), ''),
+        nullif(TRIM(LastName), ''),
+        -- Using COALESCE for honorificSuffix logic
         COALESCE(
-            NULLIF(preferredSuffix, ''), 
-            TRIM(SUBSTRING_INDEX(lastnameSuffix, ' ', -1))
-        )
+            NULLIF(TRIM(preferredSuffix), 'DNE'),
+            TRIM(SUBSTRING_INDEX(TRIM(lastnameSuffix), ' ', -1))
+        ) AS honorificSuffix
     ) AS computed_concat_attr_Name
-FROM glide.glide_sdp_sensitive_dataview_hierarchy
+FROM glide.glide_sdp_sensitive_dataview_hierarchy;

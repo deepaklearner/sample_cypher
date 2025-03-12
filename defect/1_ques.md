@@ -12,11 +12,11 @@ I have this python code """df['computed_concat_attr_Name'] = list(
 )""" and equivalent sql """ SELECT DISTINCT 
     CVSResourceid,
     CONCAT_WS(' ',
-        nullif(nameprefix), ''),
-        nullif(FirstName), ''),
+        nullif(TRIM(nameprefix), ''),
+        nullif(TRIM(FirstName), ''),
         nullif(LEFT(TRIM(MiddleName),1), ''),
-        nullif(LastName), ''),
-        nullif(honorificSuffix), ''),
+        nullif(TRIM(LastName), ''),
+        nullif(TRIM(honorificSuffix), ''),
     ) AS computed_concat_attr_Name
 
 FROM glide.glide_sdp_sensitive_dataview_hierarchy"""
