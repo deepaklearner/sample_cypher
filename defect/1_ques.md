@@ -1,14 +1,4 @@
-1. Is below corect in SQL
-
-nullif(COALESCE(TRIM(preferredSuffix), TRIM(lastNameSuffix),''))
-
-Logic in Python:
-
-df['honorificSuffix'] = np.where(df['preferredSuffix'] != 'DNE',
-                                 df['preferredSuffix'],
-                                 df['lastnameSuffix'].str.split(' ').str[-1])
-
-df['computed_concat_attr_Name'] = list(
+I have this python code """df['computed_concat_attr_Name'] = list(
     map(
         lambda x: " ".join(filter(None, x)),  # Join non-empty elements with a space
         zip(
@@ -19,10 +9,7 @@ df['computed_concat_attr_Name'] = list(
             np.where(df.honorificSuffix == "DNE", "", df.honorificSuffix),
         ),
     )
-)
-
-SQL:
-SELECT DISTINCT 
+)""" and equivalent sql """ SELECT DISTINCT 
     CVSResourceid,
     CONCAT_WS(' ',
         nullif(nameprefix), ''),
@@ -32,8 +19,10 @@ SELECT DISTINCT
         nullif(honorificSuffix), ''),
     ) AS computed_concat_attr_Name
 
-FROM glide.glide_sdp_sensitive_dataview_hierarchy
-WHERE 
-    LENGTH(TRIM(CVSResourceid)) > 0 
-    AND CVSResourceid IS NOT NULL 
-    AND CVSResourceid IN ('7304012');
+FROM glide.glide_sdp_sensitive_dataview_hierarchy"""
+
+I want to add this python logic as well to sql:
+
+"""df['honorificSuffix'] = np.where(df['preferredSuffix'] != 'DNE',
+                                 df['preferredSuffix'],
+                                 df['lastnameSuffix'].str.split(' ').str[-1]) """
