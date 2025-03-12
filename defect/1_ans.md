@@ -6,7 +6,7 @@ SELECT DISTINCT
         nullif(LEFT(TRIM(MiddleName), 1), ''),
         nullif(LastName, ''),
         CASE 
-            WHEN preferredSuffix != 'DNE' THEN preferredSuffix
+            WHEN preferredSuffix != '' THEN preferredSuffix
             ELSE TRIM(SUBSTRING_INDEX(lastnameSuffix, ' ', -1))  -- Extract the last part of lastnameSuffix
         END,
     ) AS computed_concat_attr_Name
@@ -23,7 +23,7 @@ SELECT DISTINCT
         COALESCE(NULLIF(LEFT(TRIM(MiddleName), 1), ''), ''),
         COALESCE(NULLIF(LastName, ''), ''),
         COALESCE(
-            NULLIF(preferredSuffix, 'DNE'), 
+            NULLIF(preferredSuffix, ''), 
             TRIM(SUBSTRING_INDEX(lastnameSuffix, ' ', -1))
         )
     ) AS computed_concat_attr_Name
