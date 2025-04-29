@@ -33,4 +33,4 @@ Questions:
 1. What if owner1, owner2, owner3, any one is missing? what if all are missing?
 2. What if owner is inactive?
 3. When to send email? only for failure?
-4. How to process delta?
+4**. How to process delta?
