@@ -32,3 +32,6 @@ f. For the valid ones, Create relationship "HAS_OWNER" to "User" node, based on 
 g. We are reading the data in batches of 50k.
 
 Give me ideas for efficient design. Also, let me know for any cross questions, I should ask for further clarification.
+
+Questions:
+What should we do if the Entitlement node already exists? Overwrite or skip?
