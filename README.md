@@ -1,12 +1,8 @@
 
-1.1 
-Create a ETL process in python to read data from mysql db and load into neo4j graph db.
-Give me ideas for efficient design. Also, let me know for any cross questions, I should ask for further clarification.
+1.2
+Create a ETL process in python to read data from mysql db and load into neo4j graph db in Entitlement node for entitlement data.
 
-I documented the draft as:
-
-1. Read data from mysql table edwmaster.entitlement_master. 
-Columns: 
+a. The columns we are reading from mysql are: 
 entitle_name as entitlementName,
 entitle_desc as description,
 risk_rating as riskLevel,
@@ -16,9 +12,11 @@ entitle_source as targetSystem,
 owner1, owner2, owner3 
 FROM edwmaster.entitlement_master
 
-Note: owner1, owner2, owner3 can be employeeNumber or AID
+b. owner1, owner2, owner3 are employeeNumber 
 
-2. Create a node in neo4j with label "Entitlement" with below properties:
+c. The constraints for Entitlement nodes are "entitlementName" and "targetSystem".
+
+d. "Entitlement" node has below properties:
 entitlementID,
 entitlementName,
 description,
@@ -27,14 +25,10 @@ priviledgedAccess,
 entitlementType,
 targetSystem
 
-3. The constraints for Entitlement nodes are "entitlementName" and "targetSystem"
-   
-4. Create relationship "HAS_OWNER" to "User" node, based on owner1, owner2, owner3 
+e. Validate owner1, owner2 and owner3 if they exist in graph db or has disabled label for the User node else create a error report.
 
-5. Create a error report...for owners which are not present in neo4j 
+f. For the valid ones, Create relationship "HAS_OWNER" to "User" node, based on owner1, owner2, owner3 
 
-Questions:
-1. What if owner1, owner2, owner3, any one is missing? what if all are missing?
-2. What if owner is inactive?
-3. When to send email? only for failure?
-4**. How to process delta?
+g. We are reading the data in batches of 50k.
+
+Give me ideas for efficient design. Also, let me know for any cross questions, I should ask for further clarification.
