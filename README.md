@@ -36,5 +36,7 @@ Give me ideas for efficient design. Also, let me know for any cross questions, I
 
 1.3 i am thinking should i validate each owner or should i do in a batch?
 
+1.4 for delta
+
 Questions:
 What should we do if the Entitlement node already exists? Overwrite or skip?
