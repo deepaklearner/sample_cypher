@@ -33,5 +33,8 @@ g. We are reading the data in batches of 50k.
 
 Give me ideas for efficient design. Also, let me know for any cross questions, I should ask for further clarification.
 
+
+1.3 i am thinking should i validate each owner or should i do in a batch?
+
 Questions:
 What should we do if the Entitlement node already exists? Overwrite or skip?
