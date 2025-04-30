@@ -28,8 +28,10 @@ entitlementType,
 targetSystem
 
 3. The constraints for Entitlement nodes are "entitlementName" and "targetSystem"
+   
 4. Create relationship "HAS_OWNER" to "User" node, based on owner1, owner2, owner3 
 
+5. Create a error report... 
 
 Questions:
 1. What if owner1, owner2, owner3, any one is missing? what if all are missing?
