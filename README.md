@@ -16,6 +16,8 @@ entitle_source as targetSystem,
 owner1, owner2, owner3 
 FROM edwmaster.entitlement_master
 
+Note: owner1, owner2, owner3 can be employeeNumber or AID
+
 2. Create a node in neo4j with label "Entitlement" with below properties:
 entitlementID,
 entitlementName,
