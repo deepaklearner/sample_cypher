@@ -43,7 +43,7 @@ Give me ideas for efficient design. Also, let me know for any cross questions, I
 
 1.4 for a row, if only owner1 is valid, then the code should create relationship with Entitlement node with owner1. If owner1 and owner2 both are valid then create relationship with both User nodes
 
-
+1.5 i want to pass dataframe to Neo4j and use Unwind instead of """for _, row in df.iterrows():"""
 
 Questions:
 What should we do if the Entitlement node already exists? Overwrite or skip?
