@@ -12,7 +12,7 @@ entitle_source as targetSystem,
 owner1, owner2, owner3 
 FROM edwmaster.entitlement_master
 
-b. owner1, owner2, owner3 are employeeNumber 
+b. owner1, owner2, owner3. They can we employeeNumber or aetnaresourceid (always starts with 'A') (both are properties of User node)
 
 c. The constraints for Entitlement nodes are "entitlementName" and "targetSystem".
 
