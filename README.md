@@ -25,25 +25,36 @@ priviledgedAccess,
 entitlementType,
 targetSystem
 
-e. Validate owner1, owner2 and owner3 if they exist in graph db or has disabled label for the User node else create a error report. I dont want to validate for each owner if it exist in neo4j or not. I want to do in efficient manner. Suggest one?
+e. Validate owner1, owner2 and owner3 if they exist in graph db or doesnt have "Active" label for the User node else create a error report. I dont want to validate for each owner if it exist in neo4j or not. I want to do in efficient manner. Suggest one?
 
 f. For the valid ones, Create relationship "HAS_OWNER" to "User" node, based on owner1, owner2, owner3 
 
 g. We are reading the data in batches of 50k. 
 
-Give me ideas for efficient design. Also, let me know for any cross questions, I should ask for further clarification.
+Give me ideas for efficient design.
 
-1.2_delta for delta
+2.1 In below cyphe query, I want to check if Entitlement with same owners set is present or not.
+   If there is a change in owners or its not present, then create else dont create. 
 
-1.3 i want to do """ for _, row in df.iterrows():
-            owners = [row['owner1'], row['owner2'], row['owner3']]
-            invalid = [o for o in owners if o and o not in valid_owners]
-            if invalid:
-                error_rows.append({**row, "invalid_owners": invalid})""" at a dataframe level not row by row
+   Also, if there is a change in any of the owners for an entitlement, move that owner node as below:
+   (Entitlement)-[:PREVIOUS]->(User) and create new relationship with new owner.
 
-1.4 for a row, if only owner1 is valid, then the code should create relationship with Entitlement node with owner1. If owner1 and owner2 both are valid then create relationship with both User nodes
+    UNWIND $records AS record
+    MERGE (e:Entitlement {entitlementName: record.entitlementName, targetSystem: record.targetSystem})
+    SET e.entitlementID = record.entitlementID,
+        e.description = record.description,
+        e.riskLevel = record.riskLevel,
+        e.priviledgedAccess = record.priviledgedAccess,
+        e.entitlementType = record.entitlementType
 
-1.5 i want to pass dataframe to Neo4j and use Unwind instead of """for _, row in df.iterrows():"""
+    WITH e, record.validOwners AS owners
+    UNWIND owners AS ownerId
+    MATCH (u:User {employeeNumber: ownerId})
+    MERGE (e)-[:HAS_OWNER]->(u)
+
+not sure, if comparing owner set is right. because its also possible there is just change in one owner, then we will create just one owner and move the older to PREVIOUS
+
+update record.validOwners as [row.owner1, row.owner2, row.owner3]
 
 Questions:
 What should we do if the Entitlement node already exists? Overwrite or skip?
