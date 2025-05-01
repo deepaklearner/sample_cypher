@@ -35,5 +35,11 @@ Give me ideas for efficient design. Also, let me know for any cross questions, I
 
 1.2_delta for delta
 
+1.3 i want to do """ for _, row in df.iterrows():
+            owners = [row['owner1'], row['owner2'], row['owner3']]
+            invalid = [o for o in owners if o and o not in valid_owners]
+            if invalid:
+                error_rows.append({**row, "invalid_owners": invalid})""" at a dataframe level not row by row
+
 Questions:
 What should we do if the Entitlement node already exists? Overwrite or skip?
