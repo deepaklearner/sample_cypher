@@ -25,18 +25,15 @@ priviledgedAccess,
 entitlementType,
 targetSystem
 
-e. Validate owner1, owner2 and owner3 if they exist in graph db or has disabled label for the User node else create a error report.
+e. Validate owner1, owner2 and owner3 if they exist in graph db or has disabled label for the User node else create a error report. I dont want to validate for each owner if it exist in neo4j or not. I want to do in efficient manner. Suggest one?
 
 f. For the valid ones, Create relationship "HAS_OWNER" to "User" node, based on owner1, owner2, owner3 
 
-g. We are reading the data in batches of 50k.
+g. We are reading the data in batches of 50k. 
 
 Give me ideas for efficient design. Also, let me know for any cross questions, I should ask for further clarification.
 
-
-1.3 i am thinking should i validate each owner or should i do in a batch?
-
-1.4 for delta
+1.2_delta for delta
 
 Questions:
 What should we do if the Entitlement node already exists? Overwrite or skip?
