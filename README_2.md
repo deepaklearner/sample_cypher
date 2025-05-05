@@ -8,3 +8,7 @@ You may find mutiple rows with different rank like 1, 2, 3.
 In the new table, create new columns owner1 for rank=1, owner2 for rank=2, owner3 for rank=3 
 
 3.2. How to improve efficienvy
+
+3.3 My table entitlement_master is huge and i need to read in batches. How should we do then?
+data in master table 8.8 million
+
