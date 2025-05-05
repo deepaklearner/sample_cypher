@@ -12,3 +12,5 @@ In the new table, create new columns owner1 for rank=1, owner2 for rank=2, owner
 3.3 My table entitlement_master is huge and i need to read in batches. How should we do then?
 data in master table 8.8 million
 
+3.4 can we do something in below join query only.. to return pivot reult
+"""em_batch.merge(ed_df, on=['entitle_name', 'entitle_source'], how='left')"""
