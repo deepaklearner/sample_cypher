@@ -6,3 +6,4 @@ which approach would be good?
 As of now, I am creating a connection object in the class __init__ method? Is this good or not good?
 
 4.2 will this open a new connection for every batch?
+4.3. i am using pymysql
