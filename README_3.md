@@ -6,3 +6,7 @@ which approach would be good?
 As of now, I am creating a connection object in the class __init__ method? Is this good or not good?
 
 4.2 any change in main.py code
+
+4.3. or should i use a common .. to retry all connections 3 times in some common fucntion?
+
+4.4 refactored code
