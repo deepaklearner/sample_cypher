@@ -10,3 +10,6 @@ As of now, I am creating a connection object in the class __init__ method? Is th
 4.3. or should i use a common .. to retry all connections 3 times in some common fucntion?
 
 4.4 refactored code
+updated and created v1.1
+
+4.5 i want to make my both codes more readable and easy to maintain... suggest 
