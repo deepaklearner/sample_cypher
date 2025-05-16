@@ -1,108 +1,149 @@
-You can combine both `aetna_nw_identifier_query` and `conversion_identifier_query` into a single Cypher query by handling their respective conditions (`row.Aetnaldentifier_flag = "y"` and `row.is_conversion = 'Y' AND 'Conversion' IN labels(usr)`) in a unified `UNWIND` loop and using `CASE` clauses or conditional `FOREACH` blocks to separate their logic. Here's the combined query:
+Here is a **combined Cypher query** that merges the logic from both the `aetna_nw_identifier_query` and the `conversion_identifier_query` into **one unified query**, while maintaining their distinct conditional logic paths for:
+
+* Regular users flagged with `Aetnaldentifier_flag = "y"`
+* Conversion users with `is_conversion = 'Y'` and `Conversion` label
+
+---
+
+### ✅ **Unified Cypher Query**
 
 ```cypher
 UNWIND $rows AS row
+WITH row,
+     row.Aetnaldentifier_flag = 'y' AS isAetnaFlagged,
+     row.is_conversion = 'Y' AS isConversion
 
-// Fetch users who match either AetnaIdentifier or Conversion conditions
+// Filter users
 MATCH (usr:User {employeeNumber: row.CVSResourceid})
-WHERE 
-    (row.Aetnaldentifier_flag = "y" AND NOT (usr)-[:HAS_ATTRIBUTE]->(:AetnaNetworkIdentifierInfo)) 
-    OR 
-    (row.is_conversion = 'Y' AND 'Conversion' IN labels(usr))
 
-WITH row, usr
-ORDER BY usr.employeeNumber
+// Partition: Aetna users or Conversion users
+WITH row, usr, isAetnaFlagged, isConversion
+WHERE isAetnaFlagged OR (isConversion AND 'Conversion' IN labels(usr))
 
-// Get available Aetna identifiers
+WITH COLLECT(usr) AS users, row, isAetnaFlagged, isConversion
+
+// Fetch available AetnaNetworkIdentifier nodes not yet linked
 MATCH (aetna_nw_identifier:AetnaNetworkIdentifier:NetworkIdentifier)
 WHERE NOT (aetna_nw_identifier)--()
 
-WITH COLLECT(DISTINCT usr) AS usr_array, COLLECT(DISTINCT aetna_nw_identifier) AS id_array
-UNWIND apoc.coll.zip(usr_array, id_array) AS row_pair
+WITH users, COLLECT(aetna_nw_identifier) AS identifiers, isAetnaFlagged, isConversion
 
+UNWIND apoc.coll.zip(users, identifiers) AS pair
 WITH 
-    row_pair[0] AS u,
-    row_pair[1] AS aetna_nw_identifier,
+    pair[0] AS u,
+    pair[1] AS aetna_nw_identifier,
+    isAetnaFlagged, isConversion,
     CASE 
-        WHEN 'Employee' IN labels(row_pair[0]) THEN 'A'
-        WHEN 'Contractor' IN labels(row_pair[0]) THEN 'N'
+        WHEN 'Employee' IN labels(pair[0]) THEN 'A'
+        WHEN 'Contractor' IN labels(pair[0]) THEN 'N'
         ELSE 'DNE'
     END AS prefix
 
-// Determine if user is a conversion user
-WITH u, aetna_nw_identifier, prefix,
-     CASE WHEN 'Conversion' IN labels(u) THEN true ELSE false END AS is_conversion
-
-// ---- Conversion path ----
-OPTIONAL MATCH (u)-[has_identifier_info:HAS_ATTRIBUTE]->(identifier_info:AetnaNetworkIdentifierInfo)
-OPTIONAL MATCH (identifier_info)-[r_curr:CURRENT]-(curr_aetna_nw_identifier:AetnaNetworkIdentifier:NetworkIdentifier)
-OPTIONAL MATCH (identifier_info)-[r_has_aetna_id:HAS_AETNA_ID]-(curr_aetna_nw_identifier)
-
-WITH 
-    u, aetna_nw_identifier, prefix, is_conversion,
-    identifier_info, curr_aetna_nw_identifier, has_identifier_info,
-    COLLECT(r_has_aetna_id) AS rels_has_aetna_id,
-    CASE 
-        WHEN curr_aetna_nw_identifier IS NULL 
-             OR (prefix + aetna_nw_identifier.uid) <> curr_aetna_nw_identifier.networkid 
-             THEN true 
-        ELSE false 
-    END AS codesDiffer
-
-// Conversion-specific logic
-FOREACH (_ IN CASE WHEN is_conversion AND codesDiffer THEN [1] ELSE [] END |
-    CALL apoc.refactor.rename.type("HAS_AETNA_ID", "HAD_AETNA_ID", rels_has_aetna_id) YIELD committedOperations
-)
-
-WITH u, aetna_nw_identifier, prefix, is_conversion, identifier_info, curr_aetna_nw_identifier, has_identifier_info, codesDiffer
-
+// Shared: set networkid format
 SET aetna_nw_identifier.networkid = prefix + aetna_nw_identifier.uid
 
-CREATE (new_identifier_info:AetnaNetworkIdentifierInfo {
-    eventID: toString(u.employeeNumber) + prefix + aetna_nw_identifier.uid + '.' + toString(datetime()),
-    date: datetime()
-})
+// Conversion-specific processing
+CALL apoc.do.when(
+    isConversion,
+    '
+    OPTIONAL MATCH (u)-[has_identifier_info:HAS_ATTRIBUTE]->(identifier_info:AetnaNetworkIdentifierInfo)
+    OPTIONAL MATCH (identifier_info)-[r_curr:CURRENT]-(curr_aetna_nw_identifier:AetnaNetworkIdentifier:NetworkIdentifier)
+    OPTIONAL MATCH (identifier_info)-[r_has_aetna_id:HAS_AETNA_ID]-(curr_aetna_nw_identifier)
+    
+    WITH 
+        u, aetna_nw_identifier, prefix, identifier_info, curr_aetna_nw_identifier, 
+        COLLECT(r_has_aetna_id) AS rels_has_aetna_id, has_identifier_info, r_curr
 
-MERGE (u)-[:HAS_ATTRIBUTE]->(new_identifier_info)
-MERGE (new_identifier_info)-[new_r_has_aetna_id:HAS_AETNA_ID]->(aetna_nw_identifier)
-SET 
-    new_r_has_aetna_id.assigned_date = datetime(),
-    new_r_has_aetna_id.assignedBy = 'INT5043'
+    WITH *,
+        CASE 
+            WHEN curr_aetna_nw_identifier IS NULL 
+                 OR (prefix + aetna_nw_identifier.uid) <> curr_aetna_nw_identifier.networkid 
+                 THEN true 
+            ELSE false 
+        END AS codesDiffer
 
-MERGE (new_identifier_info)-[:CURRENT]->(aetna_nw_identifier)
+    WHERE codesDiffer
 
-FOREACH (_ IN CASE WHEN is_conversion AND identifier_info IS NOT NULL THEN [1] ELSE [] END |
-    MERGE (new_identifier_info)-[:PREVIOUS]->(identifier_info)
-)
+    CALL apoc.refactor.rename.type("HAS_AETNA_ID", "HAD_AETNA_ID", rels_has_aetna_id)
+    YIELD committedOperations
 
-SET 
-    u.is_updated = 'y',
-    u.aetnaresourceid = prefix + aetna_nw_identifier.uid
+    CREATE (new_identifier_info:AetnaNetworkIdentifierInfo {
+        eventID: toString(u.employeeNumber) + (prefix + aetna_nw_identifier.uid) + "." + toString(datetime()),
+        date: datetime()
+    })
 
-FOREACH (_ IN CASE WHEN is_conversion THEN [1] ELSE [] END |
-    SET u.legacyaetnaresourceid = u.aetnaresourceid
-)
+    MERGE (u)-[:HAS_ATTRIBUTE]->(new_identifier_info)
+    MERGE (new_identifier_info)-[new_r_has_aetna_id:HAS_AETNA_ID]->(aetna_nw_identifier)
+    SET 
+        new_r_has_aetna_id.assigned_date = datetime(),
+        new_r_has_aetna_id.assignedBy = "INT5043"
 
-FOREACH (_ IN CASE WHEN NOT is_conversion AND u.cvsnetworkid IS NULL THEN [1] ELSE [] END |
-    SET u.cvsnetworkid = prefix + aetna_nw_identifier.uid
-)
+    MERGE (new_identifier_info)-[:CURRENT]->(aetna_nw_identifier)
 
-FOREACH (_ IN CASE WHEN is_conversion AND (u.cvsnetworkid IS NULL OR u.cvsnetworkid = curr_aetna_nw_identifier.networkid) THEN [1] ELSE [] END |
-    SET u.cvsnetworkid = prefix + aetna_nw_identifier.uid
-)
+    FOREACH (_ IN CASE WHEN identifier_info IS NOT NULL THEN [1] ELSE [] END |
+        MERGE (new_identifier_info)-[:PREVIOUS]->(identifier_info)
+    )
 
-FOREACH (_ IN CASE WHEN is_conversion AND has_identifier_info IS NOT NULL THEN [1] ELSE [] END |
+    SET 
+        u.legacyaetnaresourceid = u.aetnaresourceid,
+        u.aetnaresourceid = prefix + aetna_nw_identifier.uid,
+        u.is_updated = "y"
+
+    FOREACH (x IN CASE WHEN u.cvsnetworkid IS NULL OR u.cvsnetworkid = curr_aetna_nw_identifier.networkid THEN [1] ELSE [] END |
+        SET u.cvsnetworkid = prefix + aetna_nw_identifier.uid
+    )
+
     DELETE has_identifier_info, r_curr
     REMOVE curr_aetna_nw_identifier.networkid
-)
+    RETURN count(*) AS count
+    ',
+    '',
+    {u: u, aetna_nw_identifier: aetna_nw_identifier, prefix: prefix}
+) YIELD value
+
+// Aetna flag-specific processing
+CALL apoc.do.when(
+    isAetnaFlagged AND NOT isConversion,
+    '
+    CREATE (new_identifier_info:AetnaNetworkIdentifierInfo {
+        eventID: toString(u.employeeNumber) + (prefix + aetna_nw_identifier.uid) + "." + toString(datetime()),
+        date: datetime()
+    })
+
+    MERGE (u)-[:HAS_ATTRIBUTE]->(new_identifier_info)
+    MERGE (new_identifier_info)-[new_r_has_aetna_id:HAS_AETNA_ID]->(aetna_nw_identifier)
+    SET 
+        new_r_has_aetna_id.assigned_date = datetime(),
+        new_r_has_aetna_id.assignedBy = "INT5043"
+
+    MERGE (new_identifier_info)-[:CURRENT]->(aetna_nw_identifier)
+
+    SET 
+        u.aetnaresourceid = prefix + aetna_nw_identifier.uid,
+        u.is_updated = "y"
+
+    FOREACH (x IN CASE WHEN u.cvsnetworkid IS NULL THEN [1] ELSE [] END |
+        SET u.cvsnetworkid = prefix + aetna_nw_identifier.uid
+    )
+    RETURN count(*) AS count
+    ',
+    '',
+    {u: u, aetna_nw_identifier: aetna_nw_identifier, prefix: prefix}
+) YIELD value
 
 RETURN count(*) AS total
 ```
 
-### Key Notes:
+---
 
-* The logic paths are determined using `CASE` and `FOREACH` to conditionally apply mutations based on the user's label and flags in the row.
-* Shared logic is centralized to avoid duplication (e.g., setting the `networkid`, creating `AetnaNetworkIdentifierInfo`).
-* Conversion-specific logic (renaming relationships, linking to previous identifier info, legacy ID tracking) only activates for conversion users.
+### 🔍 Key Notes:
 
-Let me know if you'd like this modularized for reuse or turned into a script for parameterized execution.
+* Uses `apoc.do.when()` to conditionally execute logic depending on user type (`Conversion` vs regular).
+* Ensures consistent assignment of `networkid` using the correct prefix (`A` or `N`).
+* Protects logic for:
+
+  * Reuse of existing `AetnaNetworkIdentifierInfo`
+  * Proper relationship replacement and cleanup
+* `RETURN count(*)` at the end summarizes total updates.
+
+Let me know if you want this split into reusable procedures or need performance optimization tips.
