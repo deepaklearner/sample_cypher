@@ -66,10 +66,9 @@ WHERE 'Conversion' IN labels(usr)
 
 WITH COLLECT(usr) AS usr_array, row
 
-MATCH (aetna_nw_identifier:AetnaNetworkIdentifier:NetworkIdentifier)
-WHERE NOT (aetna_nw_identifier)-[]-()
+MATCH (aetna_nw_identifier:AetnaNetworkIdentifier:NetworkIdentifier) WHERE NOT (aetna_nw_identifier)-[]-()
 
-WITH usr_array, COLLECT(aetna_nw_identifier) AS aetna_array
+WITH usr_array, COLLECT(aetna_nw_identifier) ORDER BY aetna_nw_identifier.networkid AS aetna_array
 
 UNWIND apoc.coll.zip(usr_array, aetna_array) AS row
 
