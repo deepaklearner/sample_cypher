@@ -12,3 +12,8 @@ I want to add here """    WITH *,
                  THEN true 
             ELSE false 
         END AS codesDiffer"""" WHEN curr_aetna_nw_identifier IS NULL AND isAetnaFlagged is True
+
+1.5 In below cypher,
+instead of 
+"""CALL apoc.do.when(
+    isConversion,""" can we use """row.is_conversion = 'Y'"""
