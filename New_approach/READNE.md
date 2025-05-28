@@ -33,7 +33,11 @@ c. Create the Entitlement nodes if its not present in Neo4j.
 
 Is this approach better than previous?
 
-1.2 
+1.2
+is " pd.DataFrame([record.data() for record in result])" and 
+"pd.DataFrame(data=[dict(record) for record in result.data()])" same?
+
+1.3
 I have a python dataframe containing 
 entitlementName, targetSystem, description, riskLevel, priviledgedAccess and entitlementType.
 I want to create a list of dictionaries as below
