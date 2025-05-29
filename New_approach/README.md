@@ -49,3 +49,9 @@ Prepare a list of dictionaries for UNWIND to use in cypher:
             "targetSystem": row["targetSystem"]
         }
     ]
+
+1.4 I want to create some Entitlement nodes in neo4j and relationship with User node manually
+
+1.5 I want to create a set of dictionaries and then subtract to find the missing pair of 
+entitlementName and targetSystem from Neo4j.
+ 
