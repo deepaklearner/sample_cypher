@@ -100,3 +100,5 @@ RETURN
         coalesce(e.entitlementType, 'DNE') AS concat_attr_entitlements2,
     collect(u.employeeNumber) AS owners;
 
+
+2.2 Help me with a cypher query to update the properties in Entitlement node, only that property which is updated in mysql db. i dont want to touch the property which is not updated.
