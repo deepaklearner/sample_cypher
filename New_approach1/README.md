@@ -55,7 +55,8 @@ Prepare a list of dictionaries for UNWIND to use in cypher:
 1.5 I want to create a set of dictionaries and then subtract to find the missing pair of 
 entitlementName and targetSystem from Neo4j.
  
-2.1 I am fetching data from mysql db using below sql query and also from neo4j using cypher:
+2.1 I am fetching data from mysql db (source) using below sql query and also from neo4j (destination) using cypher. I want to find the new entitlements for key entitlementName and targetSystem in mysql db,
+and also the updated entitlements for existing ones in neo4j using python.
 
 SELECT
     entitle_name AS entitlementName,
@@ -98,3 +99,4 @@ RETURN
         coalesce(e.priviledgedAccess, 'DNE') + '|' +
         coalesce(e.entitlementType, 'DNE') AS concat_attr_entitlements2,
     collect(u.employeeNumber) AS owners;
+
