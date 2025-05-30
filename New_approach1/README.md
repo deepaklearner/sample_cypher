@@ -55,3 +55,46 @@ Prepare a list of dictionaries for UNWIND to use in cypher:
 1.5 I want to create a set of dictionaries and then subtract to find the missing pair of 
 entitlementName and targetSystem from Neo4j.
  
+2.1 I am fetching data from mysql db using below sql query and also from neo4j using cypher:
+
+SELECT
+    entitle_name AS entitlementName,
+    entitle_source AS targetSystem,
+    entitle_desc AS description,
+    risk_rating AS riskLevel,
+    priv AS privilegedAccess,
+    resource_type AS entitlementType,
+    CONCAT(entitle_name, '|', entitle_source) AS concat_attr_entitlements1,
+    CONCAT(
+        entitle_name, '|',
+        entitle_source, '|',
+        COALESCE(entitle_desc, 'DNE'), '|',
+        COALESCE(risk_rating, 'DNE'), '|',
+        COALESCE(priv, 'DNE'), '|',
+        COALESCE(resource_type, 'DNE')
+    ) AS concat_attr_entitlements2
+FROM edwmaster.entitlement_master
+WHERE entitle_name LIKE 'APP_CTX%';
+
+
+cypher:
+UNWIND $entitlements AS ent
+MATCH (e:Entitlement {
+    entitlementName: ent.entitlementName,
+    targetSystem: ent.targetSystem
+})
+OPTIONAL MATCH (e)-[:OWNER]->(u:User)
+RETURN
+    e.entitlementName AS entitlementName,
+    e.targetSystem AS targetSystem,
+    e.description AS description,
+    e.riskLevel AS riskLevel,
+    e.priviledgedAccess AS priviledgedAccess,
+    e.entitlementType AS entitlementType,
+    e.entitlementName + '|' + e.targetSystem AS concat_attr_entitlements1,
+    e.entitlementName + '|' + e.targetSystem + '|' +
+        coalesce(e.description, 'DNE') + '|' +
+        coalesce(e.riskLevel, 'DNE') + '|' +
+        coalesce(e.priviledgedAccess, 'DNE') + '|' +
+        coalesce(e.entitlementType, 'DNE') AS concat_attr_entitlements2,
+    collect(u.employeeNumber) AS owners;
