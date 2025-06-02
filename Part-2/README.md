@@ -15,3 +15,5 @@ Which approach will be faster?
 1.2 I have a pandas dataframe. and in it has multiple columns. I want to create a list of column name "entitlementName"
 
 2.1 give me ideas to organize this code to make it easy to maintain 
+
+2.3 i want to create a separate python file with name "entitlements_data_transformation.py and class name as IAMDataTransformation
