@@ -14,3 +14,4 @@ Which approach will be faster?
 
 1.2 I have a pandas dataframe. and in it has multiple columns. I want to create a list of column name "entitlementName"
 
+2.1 give me ideas to organize this code to make it easy to maintain 
