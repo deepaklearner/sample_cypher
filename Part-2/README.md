@@ -30,3 +30,4 @@ entitlementName, targetSystem, owner1, owner2 and owner3
 
 I need to find the delta_entitlement_owners, active_owners and missing_owners in graph db.
 here source is edw and destnation in graph db. delta_entitlement_owners is any owner changed in edw for entitlementName and targetSystem 
+the delta, we have to find for a combination of entitlementName and targetSystem 
