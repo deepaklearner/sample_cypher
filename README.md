@@ -1,0 +1,1 @@
+1.1 A cypher query stuck in my etl process. Where to check the logs?
