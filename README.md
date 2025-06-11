@@ -13,3 +13,6 @@ i need just employeeNumber and Reason for mismatched records
 
 k. If any of the records doesnt match, take those records out and write in log.
 l. filter the mismatched ones from original df
+
+1.2
+can we do dataframe operations instead of iterrows()
