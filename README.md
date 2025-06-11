@@ -16,3 +16,12 @@ l. filter the mismatched ones from original df
 
 1.2
 can we do dataframe operations instead of iterrows()
+
+1.3 find the valid record by negating the employNumber present in mismatch_df compared to original df
+
+1.4 
+i changed to inner join and removed """labels_df.set_index('employeeNumber', inplace=True)
+labels_df = labels_df.reindex(employee_df['employeeNumber']).fillna({'labels': [[]]})
+labels_df.reset_index(inplace=True)"""
+
+i dont want to track "User node not found in Neo4j"
