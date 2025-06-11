@@ -29,3 +29,4 @@ i dont want to track "User node not found in Neo4j"
 1.5 full code
 
 2.1 
+2.2 not using for loop
