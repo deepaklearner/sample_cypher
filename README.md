@@ -18,3 +18,4 @@ c. Check if Domestic label is present in User node label, else skip saying Reaso
 
 1.3 Use dataframe operations
 1.4 skip that record and dont pass to next validation
+1.5 i want to create a set first like set(data_frame('employeeNumber') and then pass this to cypher as list. Then use the difference to find which ones are not found in neo4j... 
