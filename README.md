@@ -15,3 +15,6 @@ a. Find existing user in neo4j -> If user not found write to another dataframe w
 b. If user found in neo4j -> check user node contains label OnLeave or Active else skip and write to another dataframe with Reason "User node do not contain OnLeave or Active label" 
 b. Check if Employee label is present in user node label then skip saying Reason "User is already an Employee"
 c. Check if Domestic label is present in User node label, else skip saying Reason "Domestic label not present" 
+
+1.3 Use dataframe operations
+1.4 skip that record and dont pass to next validation
