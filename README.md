@@ -67,3 +67,14 @@ RETURN COUNT(*) AS total
 """
 
 2.2 give me full cypher
+
+There are two keys for a node PreferredCountry
+preferredCountry and preferredCountryName.
+
+I want in dataframe to set a cloumn flag="Y" when both are not "DNE"
+
+# Set flag: "Y" if both not "DNE", else "N"
+df['flag'] = (
+    (df['preferredCountry'] != 'DNE') & 
+    (df['preferredCountryName'] != 'DNE')
+).map({True: 'Y', False: 'N'})
