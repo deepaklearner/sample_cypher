@@ -10,3 +10,10 @@ i checked in file system, owner is srv_s025010 and group neo4jadm
 owner has R, W, X access
 Group has R, X access 
 
+
+
+1. 
+
+df[i]= np.apply_along_axis(priority_cols, axis=1, arr=df[x].values)
+
+I have a data like "deepak@gmail.com" this is getting cropped 
