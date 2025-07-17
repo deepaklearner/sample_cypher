@@ -74,3 +74,9 @@ MERGE (e)-[:HAS_OWNER]->(u)
 
 One issue in this approach is, I am not obtaining the status of owners present in edw in the graph db.
 When should I do it to have a optimized solution?
+
+in delta step, find removed_owners as well. 
+
+
+1.2 inactive owner is based on label of User node in neo4j, if it has Active label or not
+correct removed definition: Owner exist in Neo4j data, but is missing in current EDW data
