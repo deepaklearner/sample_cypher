@@ -80,3 +80,5 @@ in delta step, find removed_owners as well.
 
 1.2 inactive owner is based on label of User node in neo4j, if it has Active label or not
 correct removed definition: Owner exist in Neo4j data, but is missing in current EDW data
+
+1.3 full code
