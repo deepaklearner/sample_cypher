@@ -82,3 +82,43 @@ in delta step, find removed_owners as well.
 correct removed definition: Owner exist in Neo4j data, but is missing in current EDW data
 
 1.3 full code
+
+2.1 I have below data:
+entitlementName, targetSystem, edwOwners
+How should I pass the data to update in neo4j using unwind. Like should I pass as a dataframe or dictionary?
+
+
+3.1 I have data in edw db and in neo4j db related to entitlements.
+The key is entitlementName and targetSystem. And i have to identify the new and updated data.
+
+And then run two cypher quesries to load/update the data in neo4j.
+
+The other columns are description, rishLevel, proviledgedAccess, entitlementType.
+
+Total data i have is 5 million.
+
+Approach 1: I am thinking is:
+a. Read the data from EDW db in batches of 40k.
+b. fetch the same data from graph db.
+c. Identify the new and updated entitlements
+d. Run two cypher queries.
+
+Approach 2:
+a. Read the data from EDW db in batches of 40k.
+b. Take this data and do comparison in graph db and if there are mismatch or data not found,
+then load the data or update the data accordingly.
+
+which approach is better?
+
+3.2 Identify the new and updated entitlements
+The way I am doing is: I am creating pandas dataframe from the edw data and also from neo4j data.
+new_entitlements = entitlements_edw[~entitlements_edw['concat_attr_entitlements1].isin(entitlements_neo4j['concat_attr_entitlements1'])]
+
+what if i do entitlements_edw['concat_attr_entitlements1']- entitlements_neo4j['concat_attr_entitlements1']
+
+3.3 """new_keys = set(entitlements_edw['concat_attr_entitlements1']) - set(entitlements_neo4j['concat_attr_entitlements1'])
+new_entitlements = entitlements_edw[entitlements_edw['concat_attr_entitlements1'].isin(new_keys)]""" is better or """new_entitlements = entitlements_edw[~entitlements_edw['concat_attr_entitlements1].isin(entitlements_neo4j['concat_attr_entitlements1'])]"""
+
+
+
+3.4 and how to find the updated data for concat_attr_entitlements2
