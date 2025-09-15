@@ -23,3 +23,8 @@ Enable transaction batching in Neo4j (don't send one Cypher query at a time)
 1.2
 Use id instead of offset and limit if your db is huge.
 
+Main logics:
+1. Retry mechanism
+2. Rerunnablity with resume mechanism
+3. Using id instead of offset and limit
+4. Using multiprocessing
