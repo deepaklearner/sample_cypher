@@ -16,3 +16,4 @@ I am reading data from entitlement_master in batches and then using keys searchi
 In my project, i am using Pandas.
 
 1.1 Considering the huge size of entitlement_master. I want to plan a suitable robust etl process. Please help me with ideas.
+1.2 As of now I am using Offset and Limit to read the data from entitlement_master in batches.
