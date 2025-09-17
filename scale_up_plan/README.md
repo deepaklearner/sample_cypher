@@ -19,7 +19,7 @@ entitle_source and platform are same data.
 
 I am reading data from entitlement_master in batches and then using keys searching them in eservice_data and then loading the data in neo4j."""
 
-In my project, i am using Pandas.
+In my project, i am using Pandas and neo4j.
 
 1.1 Considering the huge size of entitlement_master. I want to plan a suitable robust etl process. Please help me with ideas and also let me know the right questions about requirement I should ask.
 1.2 As of now I am using Offset and Limit to read the data from entitlement_master in batches.
@@ -32,3 +32,4 @@ What if an account if removed from an Entitlement? Are we maintaining any histor
 tell me overall strategy in least number of words in points
 
 1.4 entitlement_accounts has 40 Million data
+
