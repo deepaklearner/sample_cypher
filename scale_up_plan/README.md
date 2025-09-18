@@ -32,4 +32,3 @@ What if an account if removed from an Entitlement? Are we maintaining any histor
 tell me overall strategy in least number of words in points
 
 1.4 entitlement_accounts has 40 Million data
-

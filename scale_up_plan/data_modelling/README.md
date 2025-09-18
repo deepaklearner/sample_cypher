@@ -1,4 +1,30 @@
-1.5 Also please help me with data model
+Project overview:
+"""
+I have three tables: 
+a. entitlement_master (key: entitle_name and platform)
+b. eservice_data (key: entitle_name and entitle_source) and 
+c. entitlement_accounts: contains entitle_name, platform and accounts data
+
+Data in neo4j should be like:
+(ua:UserAccount)-[:HAS_ATTRIBUTE]->(ei:EntitlementInfo)
+(ei)-[:CURRENT]->(e:Entitlement)
+(ei)-[:HAS_ENTITLEMENT]->(e)
+
+(e)-[:HAS_OWNER]->(:User)
+(e)[:PREVIOUS]->(EntitlementOwnerInfo)-[:HAS_OWNER]->(User)
+
+MySQL table details:
+entitlement_master has 8.8 million rows
+eservice_data has 213k rows
+entitlement_user has 40 million rows
+
+entitle_source and platform are same data.
+
+I am reading data from entitlement_master in batches and then using keys searching them in eservice_data and then loading the data in neo4j."""
+
+In my project, i am using Pandas and neo4j.
+
+1.1 Please help me with data model
 
 Sample existing data model which i want to improve:
 """
