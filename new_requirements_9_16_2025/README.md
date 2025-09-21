@@ -40,3 +40,9 @@ Get the list by running the query:
 
 
 
+Q.
+I have to load entitlements from mysql db to neo4j.
+I want to make a robust etl pipeline.
+what would be better:
+    should i identify the new and updated entitlements 
+    or just use merge in cypher with On CREATE and ON MATCH to handle 
