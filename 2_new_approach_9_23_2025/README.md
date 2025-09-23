@@ -11,3 +11,5 @@ My process is:
    - Transform and load data primary domains one by one into neo4j
    - Read data for non primary domains in batch of 3200 from edw mysql db
    - Transform and load data non primary domains into neo4j
+  
+1.3 ok. now show me sample code
