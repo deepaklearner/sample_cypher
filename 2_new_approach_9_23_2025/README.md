@@ -13,3 +13,10 @@ My process is:
    - Transform and load data non primary domains into neo4j
   
 1.3 ok. now show me sample code
+
+1.5 But I have one more step to do... let me tell in detail:
+step 1: Load Entitlement from mysql to neo4j
+step 2: Fetch owner data from mysql db and create relationship with Entitlements
+
+I am thining to break both the steps in stages then how to plan for main().
+Should i keep common stuff between both steps. but there is nothing common between them
