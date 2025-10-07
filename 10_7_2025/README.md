@@ -11,4 +11,12 @@ logging.info(escaped_df.to_string(index=False))
 i tried """escaped_df = df.applymap(repr) logging.info(escaped_df.to_string(index=False))""" but when there are three \\\ it is shown as \\ only . but when there are four \\\\ its shown corectly why?
 
 #### 
+Final
+
+for col in df.select_dtypes(include='object'):
+    df[col] = df[col].apply(
+        lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x
+    )
+
+logging.info(df.to_string(index=False))
 
