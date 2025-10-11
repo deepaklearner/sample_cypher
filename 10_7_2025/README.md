@@ -20,3 +20,13 @@ for col in df.select_dtypes(include='object'):
 
 logging.info(df.to_string(index=False))
 
+### 3
+I am using mysql version 8.0.40. I have a table entitlement_master.
+In one of the column entitle_name the data constains escape character like "\" or "\\" or
+"\\\" or "\\\\".
+
+How to replace them in mysql using sql to forward slashes. Use case statement.
+
+I am reading the data from mysql database and loading into neo4j via a python pandas based etl process.
+I want to load data as it is. Is it possible?
+
