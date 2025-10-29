@@ -12,3 +12,13 @@ Then comparing both to find the new data added in mysql db and also the data whi
 Tell me how to do this using pandas dataframe in an optimized manner. I have lot of data, so i want to optimize my code.
 
 i dont want data type category for entitle_name and description
+
+3.1
+I am fetching below columns namely:
+entitlementName, targetSystem, owner1, owner2, owner3 from mysql edw database.
+
+Then using the keys (targetSystem, entitlementName) fetching same data from neo4j.
+
+Then comparing both to find the new and removed owners.
+Then update the data in neo4j accordingly. If the data is not present in neo4j, write a report for missing owners and inactive owners.
+Tell me how to do this using pandas dataframe in an optimized manner. I have lot of data, so i want to optimize my code.
