@@ -10,3 +10,5 @@ Then using the keys (entitle_name, entitle_source) fetching same data from neo4j
 
 Then comparing both to find the new data added in mysql db and also the data which got modified (any of the entitle_desc, risk_rating, priv, resource_type) columns.
 Tell me how to do this using pandas dataframe in an optimized manner. I have lot of data, so i want to optimize my code.
+
+i dont want data type category for entitle_name and description
