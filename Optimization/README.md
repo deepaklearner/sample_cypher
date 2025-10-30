@@ -70,3 +70,14 @@ RETURN
     COLLECT(DISTINCT u.employeeNumber) AS neo4jOwners
 
 4.1
+Owner delta issue (very complex):
+
+I have two pandas dataframes.
+One with columns: entitlementName, targetSystem and edwOwners (comma separated concat. maximum 3 values.can be the employeeNumber, aetnaresourceid or cvsresourceid, which are properties of User node in neo4j.) coming from mysql db edw.
+
+Next i need to find owner_to_added and owner_to_remove in neo4j. Here, source of truth is data from mysql.
+
+Relationship in neo4j is: (e:Entitlement)-[:HAS_OWNER]->(u:User)
+
+suggest a efficient approach as i have milltions of rows of data.
+NOTE: In neo4j, in User node, all three will be present in property employeeNumber, aetnaresourceid or cvsresourceid
