@@ -81,3 +81,48 @@ Relationship in neo4j is: (e:Entitlement)-[:HAS_OWNER]->(u:User)
 
 suggest a efficient approach as i have milltions of rows of data.
 NOTE: In neo4j, in User node, all three will be present in property employeeNumber, aetnaresourceid or cvsresourceid
+
+4.2
+Improve my prompt:
+"""
+I have two pandas dataframes.
+One with columns: entitlementName, targetSystem and edwOwners (comma separated concatanated values, maximum 3 values. It can be the employeeNumber, aetnaresourceid or cvsnetworkid, which are properties of User node in neo4j.) coming from mysql db edw.
+
+Next i need to find owner_to_added and owner_to_remove in neo4j. Here, source of truth is data from mysql.
+
+Relationship in neo4j is: (e:Entitlement)-[:HAS_OWNER]->(u:User)
+
+suggest a efficient approach as i have milltions of rows of data.
+NOTE: In neo4j, in User node, all three will be present in property employeeNumber, aetnaresourceid or cvsresourceid
+
+My purpose is to: Update the relationship in Neo4j and also create a report for the entitlements which are found in neo4j, for them, the owners are inactive (by checking Active label in User node) and if they are missing in neo4j.
+
+Tell me which part i should i keep in neo4j and which logic in python to keep things scalable.
+As i have total 11 million Entitlement nodes in neo4j and in mysql around 500k records.
+
+I am processing in batch of 10000
+"""
+
+Here’s an improved and polished version of your prompt. I’ve restructured it for clarity, emphasized the data sources, constraints, and goals, and made the question precise for guidance on scalability and architecture.
+
+---
+4.3
+I have a User node in Neo4j, in which there are 3 properties:
+employeeNumber, cvsnetworkid and aetnaresourceid. Usually all three have some some values for every employee. But sometimes,  cvsnetworkid or aetnaresourceid might be missing.
+Also, we have Entitlement node.
+
+The relationship between User and Entitlement node is:
+ (e:Entitlement)-[:HAS_OWNER]->(u:User)
+ And we are also tracking previous owners like:
+ (e:Entitlement)-[:PREVIOUS]->(ei:EntitlementOwnerInfo)-[:HAS_ATTRIBUTE]->(u:User)
+
+There is a table in mysql edw database, in which we have entitlementName, targetSystem and owners (comma separated values). The owners can be employeeNumber,  cvsnetworkid or aetnaresourceid.
+
+Now, what i am thinking is:
+a. Read the data from mysql db using LIMIT and OFFSET in batches in a pandas dataframe.
+b. Using this data, entitlementName and targetSystem as key, read data in neo4j and find the owners.
+
+But I am confused, what should i get for owner from neo4j employeeNumber, aetnaresourceid or cvsnetworkid.
+EVen if got a list of all, how will find what need to be added in neo4j and removed from neo4j. I mean relationship between Entitlement and User node??
+
+Help me?
