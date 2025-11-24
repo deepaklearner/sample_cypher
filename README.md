@@ -28,3 +28,5 @@ First time, when a useraccount data comes in neo4j. Then if that targetSystem is
 
 Next, time if other useraccoutn data comes for same domain... that becomes secondary accountType.
 
+
+1.2 Compute PrimaryAuth from EDW data for the incoming account.
