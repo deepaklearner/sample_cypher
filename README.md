@@ -17,7 +17,9 @@ for an employee, the PrimaryAuth is true in neo4j or accountType is not 'Primary
 As per the new rew requirement, I am supposed to:
 1.read accounts from edw > Check for PrimaryAuth system > Check If User has PrimaryAuth > If "No" then Assign PrimaryAuth to Primary Account Else (2)
 2. Compute the PrimaryAuth from EDW accounts data. If PrimaryAuth changed then Retrieve all the accounts for the User from neo4j.
-3. continue...
+3. Then, check if user has secondary account > If no then update PrimaryAuth for respective account
+4. If Yes, Then, check if PrimaryAuth set for seondary account > If yes, then switch accounts to Primary and secondary in the domain.
+5. Then check, if any domains has this PAS account as secondary. If Yes, then swicth accounts to primary and secondayr in each domain to match PAS. 
 
 This requirement is vague to me... and i need your help to think the possibilities... and think...in general for other IAM systems...
 
@@ -29,4 +31,20 @@ First time, when a useraccount data comes in neo4j. Then if that targetSystem is
 Next, time if other useraccoutn data comes for same domain... that becomes secondary accountType.
 
 
+Also, as per the requirement, further:
+
+
+
+
 1.2 Compute PrimaryAuth from EDW data for the incoming account.
+
+Summary:
+The rule:
+
+A user can have a PrimaryAuth account if:
+targetSystem ∈ ['CORP', 'CSARMARK', 'CVS']
+extensionAttribute3 contains "cloud"
+The user has no existing account in Neo4j marked as PrimaryAuth=true
+If these conditions are met → this account becomes PrimaryAuth=true
+If the user already has a primary, OR the new account does not match the criteria → this is Secondary
+
