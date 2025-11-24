@@ -1,0 +1,32 @@
+try:
+
+return_var=None
+# Step 1: Filter user_accounts based on targetsystem
+ath_accounts = [account for account in remaining accounts_list["user _accounts"] if account get ('domain') == 'AETH"]
+other_accounts = [account for account in remaining accounts_list["user _accounts"] if account get ('domain') |= 'AETH"]
+# Step 2: Combine the filtered accounts
+ordered user_accounts = aeth_accounts + other _accounts
+# Step 3: Update remaining_accounts_list with ordered_user_accounts
+ordered accounts = remaining_accounts_list.copy()
+ordered _accounts ['user_accounts'] = ordered user _accounts
+primary_auth = [] if not len(primary_account_domains[1]) else primary_account _domains [1]
+for user_account in ordered _accounts["user_accounts"]:
+if (user _account ['domain'] == "AETH" and
+(useraccount['samaccountname'].lower.startswith("a") or useraccount['samaccountname'].lower.startswith("n")) and 
+(str(user_account ['admin_description']) == "nan" or
+user _account ['admin description'] is None or user _account['admin _description'] == "NULL" or user _account ['admin description' ] == " or user_account ['admin _description'] == 'DNE'D or
+You, 3 days ago • Uncommitted changes
+(user_account[ 'domain']. lower () in self.default_ad _list and "cloud" in str(user _account['extensionattribute']). lower ()): ~
+primary_auth. append (user_account[ 'domain' ])
+if (user _account ['domain'] not in primary_account_domains (®1)
+and (len(primary_auth)==1):
+user_account["PrimaryAuthsystem"].= True
+user _account ["AccountType"] = "Primary"
+user_account ["oneID"] = ordered_accounts ["oneID"]
+user _account["CVSResourceid"] = ordered _accounts ["E_EmployeeID"]
+return_var=user _account
+primary_account _domains [0]+=[user_account[ 'domain' ]] primary_account_domains[1]+=[user_account[ 'domain' ]] primary_account _domains [2]+=[user_account [' samaccountname' ]]
+if len(primary_auth)>1:
+logging warning(f' Found more than one primary auth systems for user {ordered _accounts["E_EmployeeID"]) and domain names {"," join(primary_auth)} ')
+return return_var, primary_account_domains
+except Exception as e: logging.error(f"Exception occurred at compute_PrimaryAuthsystem_nodes : {str(e)}")

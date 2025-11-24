@@ -1,7 +1,9 @@
 1.1 
 I am working in an IAM project.
 
-I have a mysql database contains Employee and their accounts and a neo4j database.
+I have a mysql database contains Employee (dataframe created src_usraccts_for_each_usr) and their accounts and a neo4j database (dataframe created gdb_usrs_with_usraccts_has_oneid).
+
+iam_data_transformation.delta_src_vs_gdb_usrs_usraccts_profiles(src_usraccts_for_each_usr,gdb_usrs_with_usraccts_has_oneid)
 
 In my mysql table, i have columns: EmployeeID, samaccountname, targetSystem, extensionattribute3
 
