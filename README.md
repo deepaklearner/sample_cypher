@@ -112,3 +112,8 @@ Or one attribute determines which should be primary
 
 1.4 what about the existing rejection logic in code?
 "for an employee, the PrimaryAuth is true in neo4j or accountType is not 'Primary' in neo4j."
+
+2.1 Please help me to modify the code as per the new requirement. The pseudo code is load_edw.py
+""" """ and """ """
+
+2.2 flowchart

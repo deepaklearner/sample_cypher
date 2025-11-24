@@ -1,76 +1,32 @@
 import pandas as pd
 import logging
-from one_id_generator import UserOneIDGenerator
 
 
 class IAMDataTransformation:
-    """
-    This class contains data processing and standardization methods.
-    """
-
-    def __init__(self, default_ad_list, new_aetna_ad_list, new_corp_list, nonprod_domain_list):
+    def __init__(self, default_ad_list=None, new_corp_ad_list=None,
+                 new_aetna_ad_list=None, nonprod_domain_list=None):
         self.user_oneid_generator = UserOneIDGenerator()
         self.default_ad_list = default_ad_list
+        self.new_corp_ad_list = new_corp_ad_list
         self.new_aetna_ad_list = new_aetna_ad_list
-        self.new_corp_ad_list = new_corp_list
         self.nonprod_domain_list = nonprod_domain_list
 
-    def delta_source_vs_graph_for_user_profiles(self, src_usrs_df: pd.DataFrame, gdb_usrs: pd.DataFrame):
-        """
-        Transform data to identify the delta of users.
-        Args:
-            src_usrs_df (pd.DataFrame): dataframe of users from source
-            gdb_usrs (pd.DataFrame): dataframe of users from graph
-        Returns:
-            delta_users (List): users from source not in the graph
-        """
-        try:
-            logging.info("Identifying delta of users")
-            d1 = src_usrs_df['CVSResourceid'].tolist()
-            if len(gdb_usrs) == 0:
-                d2 = []
-            else:
-                d2 = gdb_usrs['employeeNumber'].tolist()
-            delta_users = list(set(d1) - set(d2))
-            logging.info(f"Delta users: {len(delta_users)}")
-
-            d1 = src_usrs_df['accountstatus'].tolist()
-            if len(gdb_usrs) == 0:
-                d2 = []
-            else:
-                d2 = gdb_usrs['accountstatus'].tolist()
-            delta_labels = list(set(d1) - set(d2))
-            logging.info(f"Delta labels: {len(delta_labels)}")
-
-            return delta_users, src_usrs_df.loc[src_usrs_df['accountstatus'].isin(delta_labels), 'CVSResourceid'].tolist()
-        except Exception as e:
-            raise Exception(str(e))
-
-    def delta_sro_vs_gdb_usrs_usraccts_profiles(
-        self,
-        src_usraccts_for_each_usr: pd.DataFrame,
-        gdb_usrs_with_usraccts_has_oneid_list: pd.DataFrame
+    def delta_sre_vs_gdb_usrs_usraccts_profiles(
+        self, src_usraccts_for_each_usr: pd.DataFrame, gdb_usrs_with_usraccts_has_oneid_list: pd.DataFrame
     ):
         """
-        Transform data to identify the delta of users with user accounts that don't have OneIDs.
-        Args:
-            src_usraccts_for_each_usr (pd.DataFrame): dataframe of users from source
-            gdb_usrs_with_usraccts_has_oneid_list (pd.DataFrame): dataframe of users from graph
-        Returns:
-            users_details_list, removed_user_accounts, new_pas_data
+        Identify delta of users with useraccounts that don't have OneIDs.
         """
-        logging.info("Identifying delta of users and user accounts")
+        logging.info("Identifying delta of users and useraccounts")
         new_pas_data = []
         removed_user_accounts = []
-
         df1 = pd.DataFrame(src_usraccts_for_each_usr)
         df2 = pd.DataFrame(gdb_usrs_with_usraccts_has_oneid_list)
 
-        # Handle removed accounts
         if not len(df1):
             df1['concat_attr_col2'] = None
-        removed_accounts = set(df2['concat_attr_col2']) - set(df1['concat_attr_col2']) if df2['concat_attr_col2'].tolist() != [None] else set()
-
+        removed_accounts = set(df2['concat_attr_col2']) - set(df1['concat_attr_col2']) \
+            if df2['concat_attr_col2'].tolist() != [None] else set()
         for account in removed_accounts:
             if account is not None and 'UNASSIGNED' not in account:
                 split_account = account.split('|')
@@ -80,25 +36,22 @@ class IAMDataTransformation:
                     'domain_n': split_account[2],
                     'label': 'UNASSIGNED'
                 })
-
         if not len(df1):
             users_details_list1 = pd.DataFrame(columns=[
-                "E_EmployeeID",
-                "user_oneid",
-                "user_accounts",
-                "lastuseraccountoneid"
+                "E_EmployeeID", "user_oneid", "user_accounts", 'lastuseraccountoneid'
             ])
-            return users_details_list1, removed_user_accounts, new_pas_data
 
         df1['usracct_oneid'] = None
-        diff_accounts = set(df1['concat_attr_col1']) - set(df2['concat_attr_col1'])
+        diff_accounts = set(df1['concat_attr_col']) - set(df2['concat_attr_col'])
         updated_accounts = set(df1['concat_attr_col1']) - set(df2['concat_attr_col1'])
 
-        # New code to process user account when attributes change
         temp_df = df2[['E_EmployeeID', 'PrimaryAuth']]
         temp_df = temp_df.groupby('E_EmployeeID')['PrimaryAuth'].any().reset_index()
 
-        updated_df = df1.loc[(~df1["concat_attr_col1"].isin(updated_accounts)) & (~df1["concat_attr_col1"].isin(diff_accounts))]
+        updated_df = df1.loc[
+            (df1["concat_attr_col1"].isin(updated_accounts)) & ~(df1["concat_attr_col1"].isin(diff_accounts))
+        ]
+
         indices_to_drop = []
 
         if not updated_df.empty:
@@ -109,32 +62,31 @@ class IAMDataTransformation:
             for i, row in updated_df.iterrows():
                 if row['PrimaryAuth'] or row['accountType'] != 'Primary':
                     logging.warning(
-                        f"Found admin description and extensionattribute changed for "
-                        f"(employeeNumber, samaccountname, domain) in {row['concat_attr_col'].split('|')}"
+                        f"Found admin description and extensionattribute changed for {row['concat_attr_col'].split('|')}"
                     )
                     indices_to_drop.append(i)
                 else:
                     diff_accounts.add(row['concat_attr_col'])
 
             updated_df.drop(indices_to_drop, inplace=True)
-            for i, row in updated_df.iterrows():
-                new_pas_data.append({
-                    'E_EmployeeID': row['concat_attr_col'].split('|')[0],
-                    'samaccountname': row['concat_attr_col'].split('|')[1],
-                    'domain': row['concat_attr_col'].split('|')[2]
-                })
+            if not updated_df['PrimaryAuth'].any:
+                diff_accounts.update(updated_df['concat_attr_col'].values)
 
         logging.info(f"Total removed user accounts: {len(removed_user_accounts)}")
         logging.info(f"Total new user accounts: {len(diff_accounts)}")
 
-        # Build final DataFrame
-        df1_tbm = df1.loc[df1["concat_attr_col"].isin(diff_accounts)][
-            ["E_EmployeeID", "usracct_oneid", "samaccountname", "domain", "extensionattributes", "admin_description"]
-        ].copy()
-        df2 = df2[['E_EmployeeID', 'user_oneid', 'lastuseraccountoneid']].drop_duplicates(subset='E_EmployeeID', keep='first')
+        df1_tbm = df1.loc[df1["concat_attr_col"].isin(diff_accounts)][[
+            "E_EmployeeID", "usracct_oneid", "samaccountname", "domain",
+            "extensionattributes", "admin_description"
+        ]].copy()
+
+        df2 = df2[['E_EmployeeID', 'user_oneid', 'lastuseraccountoneid']].drop_duplicates(
+            subset='E_EmployeeID', keep='first'
+        )
         df1_tbm = pd.merge(df1_tbm, df2, on='E_EmployeeID', how='left')
 
         diff_users = set(df1_tbm['E_EmployeeID'])
+
         try:
             users_details_list = (
                 df1_tbm[df1_tbm["E_EmployeeID"].isin(diff_users)]
@@ -142,10 +94,10 @@ class IAMDataTransformation:
                 .apply(lambda group: self.extract(group))
                 .values
             )
+            users_details_list1 = pd.DataFrame(users_details_list.tolist())
         except Exception as e:
             logging.error(e)
 
-        users_details_list1 = pd.DataFrame(users_details_list.tolist())
         return users_details_list1, removed_user_accounts, new_pas_data
 
     def extract(self, group):
@@ -168,5 +120,213 @@ class IAMDataTransformation:
             "lastuseraccountoneid": lastuseraccountoneid
         }
 
-    # Placeholder for other methods (determine_privileged_accounts, compute_primaryAuthSystem_nodes, etc.)
-    # These methods can be cleaned and formatted similarly following the same pattern.
+    def check_user_account(self, user_account, domain_list, account_prefixes):
+        return (
+            user_account['domain'].lower() in domain_list
+            and user_account['samaccountname']
+            and any(user_account['samaccountname'].lower().startswith(prefix) for prefix in account_prefixes)
+        )
+
+    def determine_privileged_accounts(self, user_accounts_data):
+        """
+        Compute privileged accounts and their OneIDs.
+        """
+        privileged_accounts_oneids_list = []
+        CVSResourceid = user_accounts_data["E_EmployeeID"]
+        user_oneid = user_accounts_data['user_oneid']
+        last_useraccount_oneid = user_accounts_data['lastuseraccountoneid']
+
+        for user_account in user_accounts_data["user_accounts"]:
+            if (
+                self.check_user_account(user_account, self.default_ad_list + self.new_corp_ad_list, ["a_", "adm_"])
+                or self.check_user_account(user_account, ["aeth", "aett", "atha"] + self.new_aetna_ad_list, ["zz", "ma", "mn"])
+                or (user_account['domain'].lower() in self.new_corp_ad_list + self.new_aetna_ad_list + ["aett", "aethq"]
+                    and "admin" in str(user_account['samaccountname']).lower())
+            ):
+                oneID = self.user_oneid_generator.useracct_oneid_generator(user_oneid, last_useraccount_oneid)
+                last_useraccount_oneid = oneID
+                temp_dict = {
+                    "samaccountname": user_account['samaccountname'],
+                    "extensionattribute3": user_account['extensionattribute3'],
+                    "oneID": oneID,
+                    "AccountType": "Privileged",
+                    "CVSResourceid": CVSResourceid,
+                    "domain": user_account['domain'],
+                    "admin_description": user_account['admin_description']
+                }
+                privileged_accounts_oneids_list.append(temp_dict)
+
+        return privileged_accounts_oneids_list, last_useraccount_oneid
+
+    def compute_PrimaryAuthsystem_nodes(self, remaining_accounts_list, primary_account_domains):
+        """
+        Determine PrimaryAuthsystem nodes.
+        """
+        try:
+            return_var = None
+
+            aeth_accounts = [
+                account for account in remaining_accounts_list["user_accounts"]
+                if account.get('domain') == 'AETH'
+            ]
+            other_accounts = [
+                account for account in remaining_accounts_list["user_accounts"]
+                if account.get('domain') != 'AETH'
+            ]
+            ordered_user_accounts = aeth_accounts + other_accounts
+
+            ordered_accounts = remaining_accounts_list.copy()
+            ordered_accounts['user_accounts'] = ordered_user_accounts
+
+            primary_auth = []
+            if len(primary_account_domains[1]) != 0:
+                for user_account in ordered_accounts["user_accounts"]:
+                    if user_account['domain'] == "AETH" and user_account['admin_description']:
+                        primary_auth.append(user_account['domain'])
+                    if user_account['domain'] not in primary_account_domains[0] and len(primary_auth) == 1:
+                        user_account["PrimaryAuthsystem"] = True
+                        user_account["AccountType"] = "Primary"
+                        user_account["oneID"] = ordered_accounts["oneID"]
+                        user_account["CVSResourceid"] = ordered_accounts["E_EmployeeID"]
+                        return_var = user_account
+                        primary_account_domains[0] += [user_account['domain']]
+                        primary_account_domains[1] += [user_account["domain"]]
+
+            if len(primary_auth) > 1:
+                primary_account_domains[2] += [user_account['samaccountname']]
+                logging.warning(
+                    f"Found more than one primary auth system for user {ordered_accounts['E_EmployeeID']} and domain names {','.join(primary_auth)}"
+                )
+
+            return return_var, primary_account_domains
+        except Exception as e:
+            logging.error(f"Exception at compute_PrimaryAuthsystem_nodes: {str(e)}")
+            return None, primary_account_domains
+
+    def determine_primary_accounts(
+        self, remaining_accounts_list, domains, primary_account_domains1,
+        primaryAuthDomainName, corpAccountNames1
+    ):
+        """
+        Compute Primary accounts and their OneIDs.
+        """
+        try:
+            useraccounts_with_oneids_list = []
+            primary_account_domains = [domains, primary_account_domains1, primaryAuthDomainName, corpAccountNames1]
+
+            usracct_with_primaryauthsystem, primary_account_domains = self.compute_PrimaryAuthsystem_nodes(
+                remaining_accounts_list, primary_account_domains
+            )
+
+            if usracct_with_primaryauthsystem is not None:
+                useraccounts_with_oneids_list.append(usracct_with_primaryauthsystem)
+
+            for user_account in remaining_accounts_list["user_accounts"]:
+                user_account["PrimaryAuthSystem"] = False
+                user_account["AccountType"] = "Primary"
+                user_account["oneID"] = remaining_accounts_list["oneID"]
+                user_account["CVSResourceid"] = remaining_accounts_list["E_EmployeeID"]
+                useraccounts_with_oneids_list.append(user_account)
+                primary_account_domains[0] += [user_account['domain']]
+
+            return useraccounts_with_oneids_list
+        except Exception as e:
+            logging.error(f"Exception at determine_primary_accounts: {str(e)}")
+            return []
+
+    def determine_secondary_accounts_list(self, remaining_accounts_list, usraccts_last_oneid):
+        """
+        Compute Secondary accounts and their OneIDs.
+        """
+        try:
+            secondary_accounts_oneids_list = []
+            CVSResourceid = remaining_accounts_list["E_EmployeeID"]
+            user_oneid = remaining_accounts_list['user_oneid']
+
+            for user_account in remaining_accounts_list["user_accounts"]:
+                oneID = self.user_oneid_generator.useracct_oneid_generator(user_oneid, usraccts_last_oneid)
+                usraccts_last_oneid = oneID
+                temp_dict = {
+                    "samaccountname": user_account['samaccountname'],
+                    "domain": user_account['domain'],
+                    "admin_description": user_account['admin_description'],
+                    "extensionattributes": user_account['extensionattribute3'],
+                    "PrimaryAuthsystem": False,
+                    "AccountType": "Secondary",
+                    "oneID": oneID,
+                    "CVSResourceid": CVSResourceid
+                }
+                secondary_accounts_oneids_list.append(temp_dict)
+
+            return secondary_accounts_oneids_list, usraccts_last_oneid
+        except Exception as e:
+            logging.error(f"Exception at determine_secondary_accounts_list: {str(e)}")
+            return [], usraccts_last_oneid
+
+    def compute_oneIDs_for_useraccounts(self, user_data):
+        """
+        Compute OneIDs for all user accounts, including privileged, primary, and secondary accounts.
+        """
+        try:
+            all_users_useraccounts_final_data = []
+
+            domains = user_data['domains'].copy()
+            primaryAuthDomain = user_data['primaryAuthDomain'].copy()
+            primaryAuthDomainName = user_data['primaryAuthDomainName'].copy()
+            corpAccountNames = user_data['corpAccountNames'].copy()
+            usraccts_last_oneid = user_data["lastuseraccountoneid"]
+
+            privileged_accounts, usraccts_last_oneid = self.determine_privileged_accounts(user_data)
+            user_data['lastuseraccountoneid'] = usraccts_last_oneid
+
+            total_user_accounts_ids = [
+                (usr_acct["samaccountname"], usr_acct["domain"])
+                for usr_acct in user_data["user_accounts"]
+            ]
+            privileged_samaccounts_ids = [
+                (usr_acct["samaccountname"], usr_acct["domain"]) for usr_acct in privileged_accounts
+            ]
+
+            remaining_accounts_ids_list = list(set(total_user_accounts_ids) - set(privileged_samaccounts_ids))
+
+            remaining_accounts_data_list = {
+                "E_EmployeeID": user_data["E_EmployeeID"],
+                "oneID": user_data["user_oneid"],
+                "user_accounts": [
+                    next(
+                        usr_acct_data for usr_acct_data in user_data["user_accounts"]
+                        if usr_acct_data['samaccountname'] == samaccount and usr_acct_data['domain'] == domain
+                    )
+                    for (samaccount, domain) in remaining_accounts_ids_list
+                ]
+            }
+
+            primary_accounts = self.determine_primary_accounts(
+                remaining_accounts_data_list, domains, primaryAuthDomain,
+                primaryAuthDomainName, corpAccountNames
+            )
+            primary_accounts_ids_list = [(acct["samaccountname"], acct["domain"]) for acct in primary_accounts]
+
+            remaining_accounts_ids_list = list(set(remaining_accounts_ids_list) - set(primary_accounts_ids_list))
+            remaining_accounts_data_list = {
+                "E_EmployeeID": user_data["E_EmployeeID"],
+                "user_oneid": user_data["user_oneid"],
+                "user_accounts": [
+                    next(
+                        usr_acct_data for usr_acct_data in user_data["user_accounts"]
+                        if usr_acct_data['samaccountname'] == samaccount and usr_acct_data['domain'] == domain
+                    )
+                    for (samaccount, domain) in remaining_accounts_ids_list
+                ]
+            }
+
+            secondary_accounts, usraccts_last_oneid = self.determine_secondary_accounts_list(
+                remaining_accounts_data_list, usraccts_last_oneid
+            )
+            user_data['lastuseraccountoneid'] = usraccts_last_oneid
+
+            all_users_useraccounts_final_data.extend(privileged_accounts + primary_accounts + secondary_accounts)
+            return all_users_useraccounts_final_data
+        except Exception as e:
+            logging.error(f"Error at compute_oneIDs_for_useraccounts: {str(e)}")
+            return []
