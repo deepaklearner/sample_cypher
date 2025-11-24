@@ -11,7 +11,7 @@ class IAMDataTransformation:
         self.new_aetna_ad_list = new_aetna_ad_list
         self.nonprod_domain_list = nonprod_domain_list
 
-    def delta_sre_vs_gdb_usrs_usraccts_profiles(
+    def delta_src_vs_gdb_usrs_usraccts_profiles(
         self, src_usraccts_for_each_usr: pd.DataFrame, gdb_usrs_with_usraccts_has_oneid_list: pd.DataFrame
     ):
         """
