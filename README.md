@@ -109,3 +109,6 @@ UNLESS business tells you:
 One system (CORP / CVS / CSARMARK) has priority
 
 Or one attribute determines which should be primary
+
+1.4 what about the existing rejection logic in code?
+"for an employee, the PrimaryAuth is true in neo4j or accountType is not 'Primary' in neo4j."
