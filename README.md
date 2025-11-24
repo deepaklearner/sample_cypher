@@ -48,3 +48,9 @@ The user has no existing account in Neo4j marked as PrimaryAuth=true
 If these conditions are met → this account becomes PrimaryAuth=true
 If the user already has a primary, OR the new account does not match the criteria → this is Secondary
 
+
+1.3 
+I didnt understand, this part:
+If eligibleAccounts > 1 → reject (ambiguous)
+
+But the current code is not rejecting in this scenario... what should i do?
