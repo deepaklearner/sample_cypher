@@ -1,4 +1,7 @@
-1.1 I have a mysql database and a neo4j database.
+1.1 
+I am working in an IAM project.
+
+I have a mysql database contains Employee and their accounts and a neo4j database.
 
 In my mysql table, i have columns: EmployeeID, samaccountname, targetSystem, attribute3
 
@@ -7,5 +10,16 @@ employeeNumber, targetSystem, PrimaryAuth (can be true or false), accountType (c
 
 In my ETL process, I am computing the PrimaryAuth, accountType.
 
-As per th eexisting logic:
-I am only allowing the PAS to be changed when, 
+As per the existing logic, for PAS related data:
+I am rejecting the mysql data if:
+for an employee, the PrimaryAuth is true in neo4j or accountType is not 'Primary' in neo4j.
+
+As per the new rew requirement, I am supposed to:
+1.read accounts from edw > Check for PrimaryAuth system > Check If User has PrimaryAuth > If "No" then Assign PrimaryAuth to Primary Account Else (2)
+2. Compute the PrimaryAuth from EDW accounts data. If PrimaryAuth changed then Retrieve all the accounts for the User from neo4j.
+3. continue...
+
+This requirement is vague to me... and i need your help to think the possibilities... and think...in general for other IAM systems...
+
+Ques 1: do i need to change the rejection logic "for an employee, the PrimaryAuth is true in neo4j or accountType is not 'Primary' in neo4j."? if i need to accomodate the new requirement?
+
