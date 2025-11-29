@@ -17,3 +17,9 @@ In one of the function in ETL i am have to modify the code to peform below:
 9. If yes, then switch accounts to primary and secondary imn the domain
 10. Check if any domains has this PAS account as secondary.
 11. If Yes, then switch accounts to primary and secondary in each domain to match PAS
+
+
+DUMOS Bar Stools Set of 4, 24 inch Counter Height Bar Stools, Upholstered Modern Kitchen Barstools with Metal Base, PU Leather Saddle Stools for Kitchen Island, White
+
+Height-Adjustable Chair / Bar Stool
+PU-leather white. With saddle seat and sturdy metal base. Clean and in great condition.

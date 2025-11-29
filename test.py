@@ -1,0 +1,137 @@
+import logging
+default_ad_list= ["corp.caremarkrx", "corp.cvshealth", "corp.cvscaremark", "aetna.com", "aeth"]
+def compute_PrimaryAuthSystem_nodes(remaining_accounts_list, primary_secondary_account_domains):
+    try:
+        # ------------------------------------------------------------------
+        # 1. Prepare data
+        # ------------------------------------------------------------------
+        data = remaining_accounts_list[0] if isinstance(remaining_accounts_list, list) else remaining_accounts_list
+        delta_accounts = data["user_accounts"]
+        oneid = data["oneID"]
+        emp_id = data["E_EmployeeID"]
+
+        # Keep your original ordering (AETH first)
+        aeth = [a for a in delta_accounts if a.get("domain") == "AETH"]
+        others = [a for a in delta_accounts if a.get("domain") != "AETH"]
+        all_delta_accounts = aeth + others
+
+        # ------------------------------------------------------------------
+        # 2. Detect NEW PrimaryAuth domain from current EDW data
+        # ------------------------------------------------------------------
+        candidate_domains = []
+        for acc in all_delta_accounts:
+            is_aeth_primary = (
+                acc["domain"] == "AETH" and
+                acc["samaccountname"].lower().startswith(("a", "n")) and
+                str(acc.get("admin_description", "")) in {"nan", "NULL", "", "DNE", None}
+            )
+            is_cloud_primary = (
+                acc["domain"].lower() in default_ad_list and
+                "cloud" in str(acc.get("extensionattribute", "")).lower()
+            )
+            if is_aeth_primary or is_cloud_primary:
+                candidate_domains.append(acc["domain"])
+
+        new_primary_auth_domain = candidate_domains[0] if candidate_domains else None
+
+        # ------------------------------------------------------------------
+        # 3. Decide which samaccountname should be the Primary Login
+        # ------------------------------------------------------------------
+        primary_login_sam = None
+
+        if new_primary_auth_domain:
+            # Prefer the account that triggered the PrimaryAuth in the new domain
+            for acc in all_delta_accounts:
+                if acc["domain"] == new_primary_auth_domain:
+                    primary_login_sam = acc["samaccountname"]
+                    break
+
+        # Fallback: keep the old Primary login ID (very important!)
+        if not primary_login_sam and primary_secondary_account_domains[2]:  # [2] = list of Primary samaccountnames
+            primary_login_sam = primary_secondary_account_domains[2][-1]
+
+        # Last fallback: first account
+        if not primary_login_sam and all_delta_accounts:
+            primary_login_sam = all_delta_accounts[0]["samaccountname"]
+
+        # ------------------------------------------------------------------
+        # 4. If NO Primary login found → do nothing (should never happen)
+        # ------------------------------------------------------------------
+        if not primary_login_sam:
+            return None, primary_secondary_account_domains
+
+        # ------------------------------------------------------------------
+        # 5. Get ALL accounts we know about (from your structure index 4 + 5)
+        # ------------------------------------------------------------------
+        known_accounts = []
+        if len(primary_secondary_account_domains) > 4:
+            known_accounts = primary_secondary_account_domains[4] + primary_secondary_account_domains[5]
+
+        # If first time → use delta accounts
+        if not known_accounts:
+            known_accounts = all_delta_accounts
+
+        # ------------------------------------------------------------------
+        # 6. APPLY AETNA RULE TO ALL ACCOUNTS
+        # ------------------------------------------------------------------
+        updated_accounts = []
+        return_var = None
+
+        for acc in known_accounts:
+            acc = dict(acc)  # copy
+            acc["oneID"] = oneid
+            acc["CVSResourceid"] = emp_id
+
+            if acc["samaccountname"] == primary_login_sam:
+                acc["AccountType"] = "Primary"
+                acc["PrimaryAuthSystem"] = (acc["domain"] == new_primary_auth_domain) if new_primary_auth_domain else False
+            else:
+                acc["AccountType"] = "Secondary"
+                acc["PrimaryAuthSystem"] = False
+
+            if acc["PrimaryAuthSystem"]:
+                return_var = acc
+
+            updated_accounts.append(acc)
+
+        # ------------------------------------------------------------------
+        # 7. Update tracking structure
+        # ------------------------------------------------------------------
+        if new_primary_auth_domain:
+            primary_secondary_account_domains[0].append(new_primary_auth_domain)
+            primary_secondary_account_domains[1] = [new_primary_auth_domain]        # current PrimaryAuth domain
+        primary_secondary_account_domains[2].append(primary_login_sam)             # current Primary login
+
+          # Rebuild primary/secondary lists
+        primary_secondary_account_domains[4] = [a for a in updated_accounts if a["AccountType"] == "Primary" and a["PrimaryAuthSystem"]]
+        primary_secondary_account_domains[5] = [a for a in updated_accounts if a["AccountType"] == "Secondary" or not a["PrimaryAuthSystem"]]
+
+        logging.info(f"SUCCESS → Primary login: {primary_login_sam}")
+        logging.info(f"          PrimaryAuthSystem = True in domain: {new_primary_auth_domain or 'UNKNOWN'}")
+        logging.info(f"dpk updated_accounts: {updated_accounts} \nprimary_secondary_account_domains:{primary_secondary_account_domains}")
+        return updated_accounts, primary_secondary_account_domains
+
+    except Exception as e:
+        logging.error(f"CRITICAL ERROR in compute_Phis: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return None, primary_secondary_account_domains
+    
+remaining_accounts_list=[
+    {
+        'E_EmployeeID': '2017328','oneID': 'aa00002a3','user_accounts': [
+            {'samaccountname': 'a12345', 'domain': 'AETH', 'admin_description': '', 'extensionattribute': ''},
+            {'samaccountname': 'b12345', 'domain': 'CORP.CVSCAREMARK', 'admin_description': '', 'extensionattribute': 'cloud user'},
+            {'samaccountname': 'c12345', 'domain': 'CORP.CVSHEALTH', 'admin_description': '', 'extensionattribute': ''},
+        ]
+    }
+]
+primary_secondary_account_domains=[
+    [],                     # list of all PrimaryAuth domains seen so far
+    [],                     # list of current PrimaryAuth domain
+    [],                     # list of current Primary samaccountnames      
+    [],                     # list of current Secondary samaccountnames
+    [],                     # list of known Primary accounts
+    []                      # list of known Secondary accounts
+]     
+compute_PrimaryAuthSystem_nodes(remaining_accounts_list, primary_secondary_account_domains)
