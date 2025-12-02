@@ -1,0 +1,61 @@
+Grok:
+
+UNWIND $rows AS row
+MATCH (usr:User {employeeNumber: row.CVSResourceid})-[:HAS_ATTRIBUTE]->(usrAct:UserAccount)
+
+// First phase: remove HAS_ACCOUNT_MAPPING relationships pointing to this account from Ping Directory
+OPTIONAL MATCH (pingAccount:UserAccount {targetSystem: "Ping Directory"})
+    -[mapping:HAS_ACCOUNT_MAPPING]->(usrAct)
+DELETE mapping
+
+// Second phase: delete all non-primary UserAccount nodes (except the primary Ping one)
+WHERE NOT (usrAct.targetSystem = 'Ping Directory' AND usrAct.accountType = 'Primary')
+
+DETACH DELETE usrAct
+
+RETURN COUNT(DISTINCT usr) AS totalProcessed
+
+Solution2 by grok
+
+UNWIND $rows AS row
+MATCH (usr:User {employeeNumber: row.CVSResourceid})
+
+WITH usr, row
+MATCH (usr)-[:HAS_ATTRIBUTE]->(usrAct:UserAccount)
+
+// Clean incoming mappings from Ping Directory accounts
+OPTIONAL MATCH (ping:UserAccount {targetSystem: "Ping Directory"})
+    -[mapping:HAS_ACCOUNT_MAPPING]->(usrAct)
+DELETE mapping
+
+// Now delete all non-primary accounts
+WITH usr, usrAct
+WHERE NOT (usrAct.targetSystem = 'Ping Directory' AND usrAct.accountType = 'Primary')
+DETACH DELETE usrAct
+
+RETURN COUNT(DISTINCT usr) AS total
+
+gpt:
+
+UNWIND $rows AS row
+MATCH (usr:User {employeeNumber: row.CVSResourceid})-[:HAS_ATTRIBUTE]->(usrAct:UserAccount)
+OPTIONAL MATCH (addUsrAct:UserAccount {targetSystem: "Ping Directory"})
+        -[mapping:HAS_ACCOUNT_MAPPING]->(usrAct)
+
+WITH usr, usrAct, mapping
+// delete the mapping first (safe)
+FOREACH (_ IN CASE WHEN mapping IS NOT NULL THEN [1] ELSE [] END |
+    DELETE mapping
+)
+
+WITH usr, usrAct
+// now delete the usrAct node if conditions require it
+WITH usrAct
+FOREACH (_ IN CASE WHEN usrAct IS NOT NULL 
+                    AND NOT (usrAct.targetSystem = 'Ping Directory' 
+                             AND usrAct.accountType = 'Primary')
+                THEN [1] ELSE [] END |
+    DETACH DELETE usrAct
+)
+
+RETURN count(*) AS total
