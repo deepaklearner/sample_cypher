@@ -4,12 +4,21 @@
 UNWIND $rows AS row
 MATCH (usr:User {employeeNumber: row.CVSResourceid})-[:HAS_ATTRIBUTE]->(usrAct:UserAccount)
 WHERE usrAct.accountType IN ['Primary', 'Secondary']
-
-WHERE NOT (usrAct.targetSystem = 'Ping Directory' AND usrAct.accountType = 'Primary')
+    AND NOT (usrAct.targetSystem = 'Ping Directory' AND usrAct.accountType = 'Primary')
 
 DETACH DELETE usrAct
 
 RETURN COUNT(*) AS total
 """
 
-why this cypher failing with error entitiyNotFound and trying to delete a UserAccount node which has accountType = "Privileged"
+why this cypher failing with error entitiyNotFound and trying to delete a UserAccount node which is already deleted in the transaction. I want to skip them if that is already deleted.
+
+Solution:
+UNWIND $rows AS row
+OPTIONAL MATCH (usr:User {employeeNumber: row.CVSResourceid})-[:HAS_ATTRIBUTE]->(usrAct:UserAccount)
+WHERE usrAct.accountType IN ['Primary', 'Secondary']
+  AND NOT (usrAct.targetSystem = 'Ping Directory' AND usrAct.accountType = 'Primary')
+WITH DISTINCT usrAct
+WHERE usrAct IS NOT NULL
+DETACH DELETE usrAct
+RETURN COUNT(*) AS total
