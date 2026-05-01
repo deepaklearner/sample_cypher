@@ -1,18 +1,28 @@
-df1 is pandas dataframe and df2 is also pandas dataframe.
-I want to check if any one row satisfies the criteria: (df1['E_EmployeeID'] == row['E_EmployeeID']) &  (df1['domain'] == 'AETH') & (df1['PrimaryAuthEDW_Original'] == True)
+I need you to design and implement a reusable LDAP connector library in Python, based on my existing codebase.
 
-And in df2, i want to check if for that employee record, for non AETH all PrimaryAuth should be False.
+Requirements:
+- Create a modular "connector framework" similar to JDBC in Java.
+- There should be a single public-facing LDAP connector class (gateway).
+- Internally, it should manage multiple connection objects (one per domain/config).
+- Connection credentials/config must be centralized and not passed every time.
+- Only runtime parameters like search filters, attributes, and queries should be passed by the caller.
+- Follow object-oriented design:
+  - Public methods for external use
+  - Private/internal methods for connection handling
+- The connector should support multiple LDAP-based systems (e.g., Active Directory domains).
+- It should be extensible so we can add other connectors later (e.g., Neo4j, databases).
+- Organize code into a "connectors" module/folder.
+- Avoid duplicating connection logic across jobs—this should replace per-job connection utilities.
+- Ensure thread-safe or independent connection handling for parallel job execution.
+- Use a modern Python LDAP library (prefer ldap3 unless my codebase already uses something else).
+- Include example usage showing how a job would call this connector with just a search filter.
 
-row value is coming from a for loop reading a different dataframe row by row.
+Also:
+- Analyze my existing code and refactor any repeated LDAP connection logic into this shared connector.
+- Preserve backward compatibility where possible.
 
-if (
-    ((df1['E_EmployeeID'] == row['E_EmployeeID']) & 
-     (df1['domain'] == 'AETH') & 
-     (df1['PrimaryAuthEDW_Original'] == True)).any()
-    and 
-    ((df2['E_EmployeeID'] == row['E_EmployeeID']) & 
-     (df2['domain'] != 'AETH') & 
-     (df2['PrimaryAuth'] == False)).all()
-):
-    clear_selected_changed_user_accounts.update(diff_accounts)
-
+Output:
+- Clean class design
+- Code implementation
+- Example usage
+- Suggestions for improvements or scalability
